@@ -16,9 +16,6 @@ class DataHandler(ABC):
 
     def get_socket(self):
         pass
-        
-    def submit_order(self): 
-        pass
 
     @abstractmethod
     def get_bars(self, tickers, bar_timeframe, num_of_bars):
@@ -71,13 +68,6 @@ class AlpacaDataHandler(DataHandler):
                     on_open    = lambda:     self.on_open())
     def get_socket(self):
         return self.ws
-        
-    def submit_order(self,symbol, qty, side, type, time_in_force, limit_price=None, stop_price=None, 
-                   client_order_id=None, order_class=None, take_profit=None, stop_loss=None, 
-                   trail_price=None, trail_percent=None):
-        self.api.submit_order(symbol, qty, side, type, time_in_force, limit_price, stop_price, 
-                        client_order_id, order_class, take_profit, stop_loss, 
-                        trail_price, trail_percent)
     
     def get_bars(self, tickers, bar_timeframe, num_of_bars):
         
@@ -112,14 +102,13 @@ class AlpacaDataHandler(DataHandler):
         function that sends a listen message to alpaca for the streams inputed.
         """
         for x in range(ticker):
-            ticker[x] = channel_name + ticker[x]
+            ticker[x] = channel_name + "." + ticker[x]
 
         listen_message = {"action": "listen", "data": {"streams": ticker}}
         self.ws.send(json.dumps(listen_message))
 
     def unlisten(self,ticker,channel_name):
         """
-        
         function that unlistens for the streams inputed.
             might need error checking if a stream that is not currently being listened to is asked to be unlistened.
         """
