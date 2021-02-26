@@ -4,7 +4,7 @@ import json
 from abc import ABC, abstractmethod
 
 
-class execution_handler(ABC):
+class ExecutionHandler(ABC):
 
     @abstractmethod
     def get_account(self):
@@ -31,7 +31,7 @@ class execution_handler(ABC):
         pass
 
 
-class alpaca_execution_handler(execution_handler):
+class AlpacaExecutionHandler(ExecutionHandler):
 
     def __init__(self, API_key_id, API_secret_key, base_url):
         self.base_url = base_url
