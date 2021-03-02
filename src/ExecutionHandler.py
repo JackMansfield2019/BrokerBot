@@ -27,7 +27,21 @@ class ExecutionHandler(ABC):
         pass
 
     @abstractmethod
-    def purchase_calculation(self):
+    def money_alloc(self):
+        pass
+
+    @abstractmethod
+    def replace_order(self):
+        pass
+
+    @abstractmethod
+    def cancel_order(self):
+        pass
+
+    def get_open_pos(self):
+        pass
+
+    def close_pos(self):
         pass
 
 
@@ -89,5 +103,17 @@ class AlpacaExecutionHandler(ExecutionHandler):
         """
         return
 
-    def purchase_calculation(self):
+    def money_alloc(self):
+        return
+
+    def replace_order(self):
+        return
+
+    def cancel_order(self):
+        return
+
+    def get_open_pos(self):
+        return
+
+    def close_pos(self):
         return
