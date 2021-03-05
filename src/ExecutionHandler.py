@@ -1,6 +1,7 @@
 import config
 import requests
 import json
+import alpaca_trade_api as tradeapi
 from abc import ABC, abstractmethod
 
 
@@ -12,6 +13,9 @@ class ExecutionHandler(ABC):
 
     @abstractmethod
     def create_order(self):
+        pass
+
+    def create_order_notional(self):
         pass
 
     @abstractmethod
@@ -38,10 +42,17 @@ class ExecutionHandler(ABC):
     def cancel_order(self):
         pass
 
+    @abstractmethod
+    def cancel_all_orders(self):
+        pass
+
     def get_open_pos(self):
         pass
 
     def close_pos(self):
+        pass
+
+    def close_all_pos(self):
         pass
 
 
@@ -55,10 +66,12 @@ class AlpacaExecutionHandler(ExecutionHandler):
                         "APCA-API-SECRET-KEY": API_secret_key}
         self.api = tradeapi.REST(headers[APCA-API-KEY-ID],
                                  headers[APCA-API-SECRET-KEY], base_url)
-        self.api_account = api.get_account()
+        self.api_account = self.api.get_account()
+        self.account_cash = self.api_account.cash
+        self.position_url = "{}/v2/positions".format(self.base_url)
 
     def get_account(self):
-        return account
+        return self.api_account
 
     def create_order(self, symbol, qty, side, type, time_in_force,
                      limit_price=None, stop_price=None, trail_price=None,
@@ -85,16 +98,40 @@ class AlpacaExecutionHandler(ExecutionHandler):
         r = requests.post(order_url, json=data, headers=self.headers)
         return json.loads(r.content)
 
+    def create_order_notional(self, symbol, notional, side, type,
+                              time_in_force, limit_price=None,
+                              stop_price=None, trail_price=None,
+                              trail_percent=None, extended_hours=False,
+                              client_order_id=None, order_class=None,
+                              take_profit=None, stop_loss=None):
+        data = {
+            "symbol": symbol,
+            "notional": notional,
+            "side": side,
+            "type": type,
+            "time_in_force": time_in_force,
+            "limit_price": limit_price,
+            "stop_price": stop_price,
+            "trail_price": trail_price,
+            "trail_percent": trail_percent,
+            "extended_hours": extended_hours,
+            "client_order_id": client_order_id,
+            "order_class": order_class,
+            "take_profit": take_profit,
+            "stop_loss": stop_loss
+            }
+
+        r = requests.post(order_url, json=data, headers=self.headers)
+        return json.loads(r.content)
+
     def get_orders(self):
         r = requests.get(self.order_url, headers=self.headers)
         return json.loads(r.content)
 
-    def check_limitations(self, api_account):
-        """
-        Goes through account details and checks if there are any limitations
-        that prevents buying shares. Returns true if no limitations,
-        false otherwise
-        """
+    def check_limitations(self):
+        if(self.api_account.trading_blocked or
+           self.api_account.account_blocked or self.account_cash <= 0):
+            return False
         return True
 
     def trade_signal(self):
@@ -104,16 +141,44 @@ class AlpacaExecutionHandler(ExecutionHandler):
         return
 
     def money_alloc(self):
+        """
+        Decides how much money is used to purchase shares
+        """
         return
 
-    def replace_order(self):
-        return
+    def replace_order(self, orderid, qty, time_in_force, limit_price=None,
+                      stop_price=None, trail=None, client_order_id=None):
+        replace_url = self.order_url + '/' + orderid
+        data = {
+            "qty": qty,
+            "time_in_force": time_in_force,
+            "limit_price": limit_price,
+            "stop_price": stop_price,
+            "trail": trail,
+            "client_order_id": client_order_id,
+            }
+        r = requests.patch(replace_url, json=data, headers=self.headers)
+        return json.loads(r.content)
 
-    def cancel_order(self):
-        return
+    def cancel_order(self, orderid):
+        delete_url = self.order_url + '/' + orderid
+        r = requests.delete(delete_url, headers=self.headers)
+        return json.loads(r.content)
 
-    def get_open_pos(self):
-        return
+    def cancel_all_orders(self):
+        r = requests.delete(order_url, headers=self.headers)
+        return json.loads(r.content)
 
-    def close_pos(self):
-        return
+    def get_open_pos(self, symbol):
+        open_pos_url = self.position_url + '/' + symbol
+        r = requests.get(open_pos_url, headers=self.headers)
+        return json.loads(r.content)
+
+    def close_pos(self, symbol):
+        close_pos_url = self.position_url + '/' + symbol
+        r = requests.delete(close_pos_url, headers=self.headers)
+        return json.loads(r.content)
+
+    def close_all_pos(self):
+        r = requests.delete(self.position_url, headers=self.headers)
+        return json.loads(r.content)
