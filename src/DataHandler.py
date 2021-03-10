@@ -89,12 +89,15 @@ class AlpacaDataHandler(DataHandler):
             self.headers["APCA-API-KEY-ID"], self.headers["APCA-API-SECRET-KEY"], base_url)
         self.api_account = self.api.get_account()
 
+        """
         self.stream_conn = StreamConn(
             API_key_id,
             API_secret_key,
             base_url=base_url,
             data_url=data_url
         )
+        """"
+        print("socket: "+ socket)
         self.ws = websocket.WebSocketApp(socket,
                                          on_message=lambda msg: self.on_message(
                                              msg),
@@ -102,7 +105,7 @@ class AlpacaDataHandler(DataHandler):
                                              msg),
                                          on_close=lambda:     self.on_close(),
                                          on_open=lambda:     self.on_open())
-
+    """"
     @self.stream_conn.on(r'^AM\..+$')
     async def on_minute_bars(conn, channel, bar):
         print('bars', bar)
@@ -114,7 +117,7 @@ class AlpacaDataHandler(DataHandler):
     @conn.on(r'T\..+')
     async def on_trades(conn, channel, trade):
         print('trade', trade)
-
+    """"
     def get_account(self):
         return self.api_account
 
@@ -122,6 +125,7 @@ class AlpacaDataHandler(DataHandler):
         self.acount = account
 
     def set_socket(self, socket="wss://data.alpaca.markets/stream"):
+        print("socket: " + socket)
         self.ws = websocket.WebSocketApp(socket,
                                          on_message=lambda msg: self.on_message(
                                              msg),
@@ -179,16 +183,19 @@ class AlpacaDataHandler(DataHandler):
     def on_error(self, error):
         print(error)
 
+    def run_socket(self):
+        self.ws.run_forever()
+    
     def listen(self, tickers, channel_name):
         """
         function that sends a listen message to alpaca for the streams inputed.
         """
-        # for x in range(len(tickers)):
-        #     tickers[x] = channel_name + "." + tickers[x]
-
-        # listen_message = {"action": "listen", "data": {"streams": tickers}}
-        # self.ws.send(json.dumps(listen_message))
-        self.stream_conn.run(quote_callback, tickers)
+        for x in range (len(tickers)):
+            tickers[x] = channel_name + "." + tickers[x]
+        print(tickers)
+        listen_message = {"action": "listen", "data": {"streams": tickers}}
+        self.ws.send(json.dumps(listen_message))
+        #self.stream_conn.run(quote_callback, tickers)
 
     def unlisten(self, ticker, channel_name):
         """

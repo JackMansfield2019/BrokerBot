@@ -8,7 +8,6 @@ from threading import Thread
 
 class BrokerBot:
     def __init__(self, api_key, secret_key, base_url, data_url):
-        Thread.__init__(self)
 
         self.headers = {"APCA-API-KEY-ID": api_key,
                         "APCA-API-SECRET-KEY": secret_key}
@@ -36,4 +35,7 @@ class BrokerBot:
         return json.loads(r.content)
 
     def test_stream_data(self, ticker):
-        self.data_handler.listen([ticker], "T")
+      self.data_handler.run_socket()
+      self.data_handler.listen([ticker],"T")
+
+      # self.data_handler.listen([ticker], "T")
