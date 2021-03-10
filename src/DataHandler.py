@@ -97,6 +97,8 @@ class AlpacaDataHandler(DataHandler):
             data_url=data_url
         )
         """"
+
+        """
         print("socket: "+ socket)
         self.ws = websocket.WebSocketApp(socket,
                                          on_message=lambda msg: self.on_message(
@@ -105,6 +107,8 @@ class AlpacaDataHandler(DataHandler):
                                              msg),
                                          on_close=lambda:     self.on_close(),
                                          on_open=lambda:     self.on_open())
+        """"
+    
     """"
     @self.stream_conn.on(r'^AM\..+$')
     async def on_minute_bars(conn, channel, bar):
@@ -123,16 +127,6 @@ class AlpacaDataHandler(DataHandler):
 
     def set_account(self, account):
         self.acount = account
-
-    def set_socket(self, socket="wss://data.alpaca.markets/stream"):
-        print("socket: " + socket)
-        self.ws = websocket.WebSocketApp(socket,
-                                         on_message=lambda msg: self.on_message(
-                                             msg),
-                                         on_error=lambda msg: self.on_error(
-                                             msg),
-                                         on_close=lambda:     self.on_close(),
-                                         on_open=lambda:     self.on_open())
 
     def get_socket(self):
         return self.ws
@@ -166,12 +160,17 @@ class AlpacaDataHandler(DataHandler):
         """
         function called whenever a websocket is opened, authenticates with alpaca
         """
+        """
         print("opened-stream")
         auth_data = {
             "action": "authenticate",
             "data": {"key_id": config.API_KEY, "secret_key": config.SECRET_KEY}
         }
         self.ws.send(json.dumps(auth_data))
+        listen_message = {"action": "listen", "data": {"streams": ["T.TSLA"]}}
+        self.ws.send(json.dumps(listen_message))
+        self.ws.run_forever()
+        """
 
     def on_message(self, message):
         print("received a message")
@@ -206,3 +205,22 @@ class AlpacaDataHandler(DataHandler):
             ticker[x] = channel_name + ticker[x]
         unlisten_message = {"action": "unlisten", "data": {"streams": ticker}}
         self.ws.send(json.dumps(unlisten_message))
+
+    def set_socket(self, socket="wss://data.alpaca.markets/stream"):
+        print("socket: " + socket)
+        self.ws = websocket.WebSocketApp(socket,
+                                         on_message=lambda msg: self.on_message(
+                                             msg),
+                                         on_error=lambda msg: self.on_error(
+                                             msg),
+                                         on_close=lambda:     self.on_close(),
+                                         on_open=lambda:     self.on_open())
+        print("opened-stream")
+        auth_data = {
+            "action": "authenticate",
+            "data": {"key_id": config.API_KEY, "secret_key": config.SECRET_KEY}
+        }
+        self.ws.send(json.dumps(auth_data))
+        listen_message = {"action": "listen", "data": {"streams": ["T.TSLA"]}}
+        self.ws.send(json.dumps(listen_message))
+        self.ws.run_forever()

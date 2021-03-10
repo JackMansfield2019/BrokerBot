@@ -35,6 +35,7 @@ class BrokerBot:
         return json.loads(r.content)
 
     def test_stream_data(self, ticker):
+      self.data_handler.set_socket(self.data_url)
       self.data_handler.run_socket()
       self.data_handler.listen([ticker],"T")
 
