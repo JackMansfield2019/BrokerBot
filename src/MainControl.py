@@ -1,11 +1,11 @@
-import BrokerBot
-import Searcher
+from BrokerBot import BrokerBot
+# import Searcher
 import datetime
-import pytz
-import holidays
+import pytz  # pip
+import holidays  # pip
 import os
 import threading
-from dotenv import load_dotenv
+from dotenv import load_dotenv  # pip
 
 
 class MainControl:
@@ -16,21 +16,57 @@ class MainControl:
         self.api_key = ""
         self.secret_key = ""
         self.base_url = ""
+        self.data_url = ""
 
         try:
             self.api_key = os.environ['API_KEY']
             self.secret_key = os.environ['SECRET_KEY']
             self.base_url = os.environ['BASE_URL']
+            self.data_url = os.environ['DATA_URL']
         except Exception:
             load_dotenv()
             self.api_key = os.getenv('API_KEY')
             self.secret_key = os.getenv('SECRET_KEY')
             self.base_url = os.getenv('BASE_URL')
+            self.data_url = os.getenv('DATA_URL')
 
-        self.Searcher = Searcher(
-            self.api_key, self.secret_key, self.base_url)
-        self.BrokerBot = BrokerBot(
-            self.api_key, self.secret_key, self.base_url)
+        # self.Searcher = Searcher(
+        #     self.api_key, self.secret_key, self.base_url)
+        # self.BrokerBot = BrokerBot(
+        #     self.api_key, self.secret_key, self.base_url)
+
+    # def run(self):
+        # TODO: Implement timing algo fully
+        # while True:
+        #     if market_closed:
+        #         sleep(60)
+        #         continue
+
+        #     else:
+        #         self.Searcher.search()
+        #         self.BrokerBot.run()
+
+    def test_data_ingest(self):
+        # Goal : spin up several broker bots on different threads with same API key -> same socket
+        #        see if proxy agent works with different socket instances w/ same key or need to
+        #        instanitnate bb/searcher with one ws object
+        broker_bots = []
+        listening_threads = []
+        tickers = ["TSLA", "AAPL", "GME", "AMC", "ROKU"]
+        for i in range(5):
+            broker_bots.append(
+                BrokerBot(self.api_key, self.secret_key, self.base_url, self.data_url))
+
+        ticker_counter = 0
+        for bot in broker_bots:
+            stream_thread = threading.Thread(
+                target=bot.test_stream_data, args=(tickers[ticker_counter],))
+
+            listening_threads.append(stream_thread)
+            ticker_counter += 1
+
+        # for thread in listening_threads:
+        #     thread.start()
 
 
 def market_closed(now=None):
@@ -56,12 +92,6 @@ def market_closed(now=None):
     return False
 
 
-def run(self):
-    while True:
-        if market_closed:
-            sleep(60)
-            continue
-
-        else:
-            self.Searcher.search()
-            self.BrokerBot.run()
+if __name__ == "__main__":
+    main_control = MainControl()
+    main_control.test_data_ingest()
