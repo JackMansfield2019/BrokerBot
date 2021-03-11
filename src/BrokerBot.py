@@ -21,7 +21,7 @@ class BrokerBot:
         self.order_url = "{}/v2/orders".format(self.base_url)
 
         self.data_handler = AlpacaDataHandler(
-            self.api_key, self.secret_key, self.base_url, self.data_url, "ws://127.0.0.1:8765")
+            self.api_key, self.secret_key, self.base_url, self.data_url, "wss://127.0.0.1:8765")
 
         # self.stream_conn = StreamConn(
         #     api_key,
@@ -35,8 +35,9 @@ class BrokerBot:
         return json.loads(r.content)
 
     def test_stream_data(self, ticker):
-      self.data_handler.set_socket(self.data_url)
-      self.data_handler.run_socket()
-      self.data_handler.listen([ticker],"T")
+        self.data_handler.set_and_run_socket("ws://127.0.0.1:8765", ticker)
+        # print()
+        # self.data_handler.run_socket()
+        # self.data_handler.listen([ticker], "T")
 
-      # self.data_handler.listen([ticker], "T")
+        # self.data_handler.listen([ticker], "T")

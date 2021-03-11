@@ -15,6 +15,10 @@ from typing import NamedTuple
 import pandas as pd
 
 
+def on_message(ws, message):
+    print("WS 1: received a message")
+    print(message)
+    print()
 # Data format using a dataclass, one option for storage, may be heavy though.
 @dataclass
 class OOPBar:
@@ -79,49 +83,39 @@ class DataHandler(ABC):
 
 
 class AlpacaDataHandler(DataHandler):
-    def __init__(self, API_key_id, API_secret_key, base_url, data_url, socket="wss://data.alpaca.markets/stream"):
-        self.headers = {"APCA-API-KEY-ID": API_key_id,
-                        "APCA-API-SECRET-KEY": API_secret_key}
+    def __init__(self, api_key, secret_key, base_url, data_url, socket="wss://data.alpaca.markets/stream"):
+        self.api_key = api_key
+        self.secret_key = secret_key
+        self.headers = {"APCA-API-KEY-ID": api_key,
+                        "APCA-API-SECRET-KEY": secret_key}
         self.base_url = base_url
         self.account_url = "{}/v2/account".format(self.base_url)
         self.order_url = "{}/v2/orders".format(self.base_url)
         self.api = tradeapi.REST(
             self.headers["APCA-API-KEY-ID"], self.headers["APCA-API-SECRET-KEY"], base_url)
         self.api_account = self.api.get_account()
+        self.ws = None
 
-        """
-        self.stream_conn = StreamConn(
-            API_key_id,
-            API_secret_key,
-            base_url=base_url,
-            data_url=data_url
-        )
-        """"
+        #
+        # self.stream_conn = StreamConn(
+        #     API_key_id,
+        #     API_secret_key,
+        #     base_url=base_url,
+        #     data_url=data_url
+        # )
+        # "
 
-        """
-        print("socket: "+ socket)
-        self.ws = websocket.WebSocketApp(socket,
-                                         on_message=lambda msg: self.on_message(
-                                             msg),
-                                         on_error=lambda msg: self.on_error(
-                                             msg),
-                                         on_close=lambda:     self.on_close(),
-                                         on_open=lambda:     self.on_open())
-        """"
-    
-    """"
-    @self.stream_conn.on(r'^AM\..+$')
-    async def on_minute_bars(conn, channel, bar):
-        print('bars', bar)
+        #
+        # print("socket: "+ socket)
+        # self.ws = websocket.WebSocketApp(socket,
+        #                                  on_message=lambda msg: self.on_message(
+        #                                      msg),
+        #                                  on_error=lambda msg: self.on_error(
+        #                                      msg),
+        #                                  on_close=lambda:     self.on_close(),
+        #                                  on_open=lambda:     self.on_open())
+        # "
 
-    @conn.on(r'Q\..+')
-    async def on_quotes(conn, channel, quote):
-        print('quote', quote)
-
-    @conn.on(r'T\..+')
-    async def on_trades(conn, channel, trade):
-        print('trade', trade)
-    """"
     def get_account(self):
         return self.api_account
 
@@ -156,21 +150,20 @@ class AlpacaDataHandler(DataHandler):
         df = pd.read_json(r.json())
         return df
 
-    def on_open(self):
-        """
-        function called whenever a websocket is opened, authenticates with alpaca
-        """
-        """
-        print("opened-stream")
+    def on_open(self, ticker):
+        print("on open")
+
+        # function called whenever a websocket is opened, authenticates with alpaca
+
         auth_data = {
             "action": "authenticate",
-            "data": {"key_id": config.API_KEY, "secret_key": config.SECRET_KEY}
+            "data": {"key_id": self.api_key, "secret_key": self.secret_key}
         }
         self.ws.send(json.dumps(auth_data))
-        listen_message = {"action": "listen", "data": {"streams": ["T.TSLA"]}}
+        print("sent auth")
+        listen_message = {"action": "listen",
+                          "data": {"streams": [f"T.TSLA"]}}
         self.ws.send(json.dumps(listen_message))
-        self.ws.run_forever()
-        """
 
     def on_message(self, message):
         print("received a message")
@@ -184,12 +177,12 @@ class AlpacaDataHandler(DataHandler):
 
     def run_socket(self):
         self.ws.run_forever()
-    
+
     def listen(self, tickers, channel_name):
-        """
-        function that sends a listen message to alpaca for the streams inputed.
-        """
-        for x in range (len(tickers)):
+        #
+        # function that sends a listen message to alpaca for the streams inputed.
+        #
+        for x in range(len(tickers)):
             tickers[x] = channel_name + "." + tickers[x]
         print(tickers)
         listen_message = {"action": "listen", "data": {"streams": tickers}}
@@ -197,30 +190,30 @@ class AlpacaDataHandler(DataHandler):
         #self.stream_conn.run(quote_callback, tickers)
 
     def unlisten(self, ticker, channel_name):
-        """
-        function that unlistens for the streams inputed.
-            might need error checking if a stream that is not currently being listened to is asked to be unlistened.
-        """
+        #
+        # function that unlistens for the streams inputed.
+        #     might need error checking if a stream that is not currently being listened to is asked to be unlistened.
+        #
         for x in range(ticker):
             ticker[x] = channel_name + ticker[x]
         unlisten_message = {"action": "unlisten", "data": {"streams": ticker}}
         self.ws.send(json.dumps(unlisten_message))
 
-    def set_socket(self, socket="wss://data.alpaca.markets/stream"):
+    def set_and_run_socket(self, socket, ticker):
         print("socket: " + socket)
         self.ws = websocket.WebSocketApp(socket,
-                                         on_message=lambda msg: self.on_message(
-                                             msg),
-                                         on_error=lambda msg: self.on_error(
-                                             msg),
+                                         on_message=lambda msg: on_message(self.ws,
+                                                                           msg),
                                          on_close=lambda:     self.on_close(),
-                                         on_open=lambda:     self.on_open())
-        print("opened-stream")
-        auth_data = {
-            "action": "authenticate",
-            "data": {"key_id": config.API_KEY, "secret_key": config.SECRET_KEY}
-        }
-        self.ws.send(json.dumps(auth_data))
-        listen_message = {"action": "listen", "data": {"streams": ["T.TSLA"]}}
-        self.ws.send(json.dumps(listen_message))
+                                         on_open=lambda ticker:     self.on_open(ticker))
+        # print("opened-stream")
+        # print(self.ws)
+        # auth_data = {
+        #     "action": "authenticate",
+        #     "data": {"key_id": self.api_key, "secret_key": self.secret_key}
+        # }
+        # self.ws.send(json.dumps(auth_data))
+        # print("got auth")
+        # listen_message = {"action": "listen", "data": {"streams": ["T.TSLA"]}}
+        # self.ws.send(json.dumps(listen_message))
         self.ws.run_forever()

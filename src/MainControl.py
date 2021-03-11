@@ -53,17 +53,18 @@ class MainControl:
         broker_bots = []
         listening_threads = []
         tickers = ["TSLA", "AAPL", "GME", "AMC", "ROKU"]
-        for i in range(5):
+        for i in range(1):
             broker_bots.append(
                 BrokerBot(self.api_key, self.secret_key, self.base_url, self.data_url))
 
-        ticker_counter = 0
-        for bot in broker_bots:
-            stream_thread = threading.Thread(
-                target=bot.test_stream_data, args=(tickers[ticker_counter],))
+        broker_bots[0].test_stream_data(tickers[0])
+        # ticker_counter = 0
+        # for bot in broker_bots:
+        #     stream_thread = threading.Thread(
+        #         target=bot.test_stream_data, args=(tickers[ticker_counter],))
 
-            listening_threads.append(stream_thread)
-            ticker_counter += 1
+        #     listening_threads.append(stream_thread)
+        #     ticker_counter += 1
 
         # for thread in listening_threads:
         #     thread.start()
