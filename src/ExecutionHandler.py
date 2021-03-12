@@ -38,20 +38,20 @@ class ExecutionHandler(ABC):
     def replace_order(self):
         pass
 
-    @abstractmethod
     def cancel_order(self):
         pass
 
-    @abstractmethod
     def cancel_all_orders(self):
         pass
 
     def get_open_pos(self):
         pass
 
+    @abstractmethod
     def close_pos(self):
         pass
 
+    @abstractmethod
     def close_all_pos(self):
         pass
 
@@ -98,18 +98,18 @@ class AlpacaExecutionHandler(ExecutionHandler):
         r = requests.post(order_url, json=data, headers=self.headers)
         return json.loads(r.content)
 
-    def create_order_notional(self, symbol, notional, side, type,
-                              time_in_force, limit_price=None,
-                              stop_price=None, trail_price=None,
-                              trail_percent=None, extended_hours=False,
-                              client_order_id=None, order_class=None,
-                              take_profit=None, stop_loss=None):
+    def create_order_notional(self, symbol, notional, side,
+                              limit_price=None, stop_price=None,
+                              trail_price=None, trail_percent=None,
+                              extended_hours=False, client_order_id=None,
+                              order_class=None, take_profit=None,
+                              stop_loss=None):
         data = {
             "symbol": symbol,
             "notional": notional,
             "side": side,
-            "type": type,
-            "time_in_force": time_in_force,
+            "type": 'market',
+            "time_in_force": 'day',
             "limit_price": limit_price,
             "stop_price": stop_price,
             "trail_price": trail_price,
