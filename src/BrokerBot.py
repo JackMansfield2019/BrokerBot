@@ -4,6 +4,7 @@
 # import StrategyHandler
 from DataHandler import AlpacaDataHandler
 from threading import Thread
+import time
 
 
 class BrokerBot:
@@ -37,7 +38,12 @@ class BrokerBot:
         return json.loads(r.content)
 
     def test_stream_data(self, ticker):
-        self.data_handler.start_streaming()
+        listening_thread = Thread(target = self.data_handler.start_streaming, args=(ticker,))
+        listening_thread.start()
+        time.sleep(10)
+        update_channel_thread = Thread(target=self.data_handler.listen, args=(["AMC"], "T",))
+
+        update_channel_thread.start()
         # print()
         # self.data_handler.run_socket()
         # self.data_handler.listen([ticker], "T")

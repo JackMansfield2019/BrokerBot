@@ -100,26 +100,9 @@ class AlpacaDataHandler(DataHandler):
         self.api_account = self.api.get_account()
         self.ws = None
         self.socket = socket
+        self.pending_tickers = []
 
-        #
-        # self.stream_conn = StreamConn(
-        #     API_key_id,
-        #     API_secret_key,
-        #     base_url=base_url,
-        #     data_url=data_url
-        # )
-        # "
-
-        #
-        # print("socket: "+ socket)
-        # self.ws = websocket.WebSocketApp(socket,
-        #                                  on_message=lambda msg: self.on_message(
-        #                                      msg),
-        #                                  on_error=lambda msg: self.on_error(
-        #                                      msg),
-        #                                  on_close=lambda:     self.on_close(),
-        #                                  on_open=lambda:     self.on_open())
-        # "
+    
 
     def get_account(self):
         return self.api_account
@@ -155,48 +138,54 @@ class AlpacaDataHandler(DataHandler):
         df = pd.read_json(r.json())
         return df
 
-    def start_streaming(self):
-        def on_open(ws):
-            print("on open")
 
-            # function called whenever a websocket is opened, authenticates with alpaca
+    # Socket Functions
+    def on_open(self, ws):
+        print("on open")
 
-            auth_data = {
-                "action": "authenticate",
-                "data": {
-                    "key_id": self.api_key,
-                    "secret_key": self.secret_key
-                }
+        # function called whenever a websocket is opened, authenticates with alpaca
+
+        auth_data = {
+            "action": "authenticate",
+            "data": {
+                "key_id": self.api_key,
+                "secret_key": self.secret_key
             }
-            ws.send(json.dumps(auth_data))
-            print("sent auth")
-            listen_message = {
-                "action": "listen",
-                "data": {
-                    "streams": [f"AM.TSLA"]
-                }
+        }
+        ws.send(json.dumps(auth_data))
+        print("sent auth")
+        listen_message = {
+            "action": "listen",
+            "data": {
+                "streams": [f"AM.{self.pending_tickers.pop()}", "AM.GME"]
             }
-            ws.send(json.dumps(listen_message))
+        }
+        # check pending tickers, sne initial listen message, wait for new tickers,
+        ws.send(json.dumps(listen_message))
 
-        def on_message(ws, message):
-            print("received a message")
-            print(message)
+    def on_message(self, ws, message):
+        print("received a message")
+        print(message)
 
-        def on_close(ws):
-            print("closed connection")
+    def on_close(self, ws):
+        print("closed connection")
 
-        def on_error(ws, error):
-            print(error)
+    def on_error(self, ws, error):
+        print(error)
 
+
+    def start_streaming(self, ticker):
+       
+        self.pending_tickers.append(ticker)
         print(self.socket)
-        ws = websocket.WebSocketApp(
+        self.ws = websocket.WebSocketApp(
             self.socket,
-            on_message=lambda ws, msg: on_message(ws, msg),
-            on_close=lambda ws: on_close(ws),
-            on_open=lambda ws: on_open(ws),
-            on_error=lambda ws, error: on_error(ws, error))
+            on_message=lambda ws, msg: self.on_message(self.ws, msg),
+            on_close=lambda ws: self.on_close(self.ws),
+            on_open=lambda ws: self.on_open(self.ws),
+            on_error=lambda ws, error: self.on_error(self.ws, error))
 
-        ws.run_forever()
+        self.ws.run_forever()
         print("HELLO")
 
     def listen(self, tickers, channel_name):
@@ -220,21 +209,4 @@ class AlpacaDataHandler(DataHandler):
         unlisten_message = {"action": "unlisten", "data": {"streams": ticker}}
         self.ws.send(json.dumps(unlisten_message))
 
-    def set_and_run_socket(self, socket, ticker):
-        print("socket: " + socket)
-        self.ws = websocket.WebSocketApp(
-            socket,
-            on_message=lambda msg: on_message(self.ws, msg),
-            on_close=lambda: self.on_close(),
-            on_open=lambda ticker: self.on_open(ticker))
-        # print("opened-stream")
-        # print(self.ws)
-        # auth_data = {
-        #     "action": "authenticate",
-        #     "data": {"key_id": self.api_key, "secret_key": self.secret_key}
-        # }
-        # self.ws.send(json.dumps(auth_data))
-        # print("got auth")
-        # listen_message = {"action": "listen", "data": {"streams": ["T.TSLA"]}}
-        # self.ws.send(json.dumps(listen_message))
-        self.ws.run_forever()
+   
