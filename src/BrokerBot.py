@@ -9,8 +9,10 @@ from threading import Thread
 class BrokerBot:
     def __init__(self, api_key, secret_key, base_url, data_url):
 
-        self.headers = {"APCA-API-KEY-ID": api_key,
-                        "APCA-API-SECRET-KEY": secret_key}
+        self.headers = {
+            "APCA-API-KEY-ID": api_key,
+            "APCA-API-SECRET-KEY": secret_key
+        }
 
         self.api_key = api_key
         self.secret_key = secret_key
@@ -20,8 +22,8 @@ class BrokerBot:
         self.account_url = "{}/v2/account".format(self.base_url)
         self.order_url = "{}/v2/orders".format(self.base_url)
 
-        self.data_handler = AlpacaDataHandler(
-            self.api_key, self.secret_key, self.base_url, self.data_url, "wss://127.0.0.1:8765")
+        self.data_handler = AlpacaDataHandler(self.api_key, self.secret_key,
+                                              self.base_url, self.data_url, "ws://127.0.0.1:8765")
 
         # self.stream_conn = StreamConn(
         #     api_key,
@@ -35,7 +37,7 @@ class BrokerBot:
         return json.loads(r.content)
 
     def test_stream_data(self, ticker):
-        self.data_handler.set_and_run_socket("ws://127.0.0.1:8765", ticker)
+        self.data_handler.start_streaming()
         # print()
         # self.data_handler.run_socket()
         # self.data_handler.listen([ticker], "T")
