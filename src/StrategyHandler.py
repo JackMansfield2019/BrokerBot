@@ -5,8 +5,12 @@ class StrategyHandler:
         pass
 
     """
-    High Risk Strategy will be implemented in here.
-    Below is just an example to give an idea.
+    Overview: High-Risk Strategy will be implemented here. Below is just an example to give an idea. 
+
+    Requires: bars is non-null
+    Modifies: none
+    Effects: none
+    Returns: sell-trade decision if previous close is less than fibonacci value AND current open is less than fibonacci value, else returns none representing no decision is made
     """
     def HighRisk(symbol, bars):
         fib_values = self.fibonacci(symbol, bars)
@@ -21,12 +25,12 @@ class StrategyHandler:
         pass
 
     """
-    Low Risk Strategy will be implemented in here.
-    Below is just an example to give an idea. 
-    Returns:
-        - Trade Decision
-        - Take_Profit value
-        - Stop_Loss value
+    Overview: Low-Risk Strategy will be implemented here. Below is just an example to give an idea. 
+
+    Requires: bars is non-null
+    Modifies: none
+    Effects: none
+    Returns: buy-trade decision, take-profit, and stop-loss if current volume is 1.5x greater than previous volume. 
     """
     def LowRisk(symbol, bars):
         vol_1 = self.volume(bars[0])
@@ -39,6 +43,14 @@ class StrategyHandler:
             decision =  ["BUY", TP, SL]
             return decision 
     
+    """
+    Overview: calculates the fibonacci values of 23.6%, 38.2%, 50%, 61.8%, and 78.6% 
+
+    Requires: bars is non-null
+    Modifies: none
+    Effects: none
+    Returns: fibonacci values 
+    """
     def fibonacci(symbol, bars):
         first = bars[0] #first data-value in the bars array (most recent bar to current bar)
         second = bars[len(candles) - 1] #last data-value in the bars array (most farthest bar to current bar)
