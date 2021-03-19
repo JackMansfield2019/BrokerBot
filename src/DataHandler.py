@@ -4,11 +4,13 @@ import alpaca_trade_api as tradeapi
 from dataclasses import dataclass # Python structs module.
 import pandas as pd # For data storage and analysis.
 
+
 # Abstract base class for the data handler, to facilitate different apis using subclasses.
-class DataHandler(ABC):    
+class DataHandler(ABC):
     @abstractmethod
     def get_account(self):
         pass
+
     @abstractmethod
     def set_account(self, account):
         pass
@@ -20,7 +22,7 @@ class DataHandler(ABC):
         pass
 
     @abstractmethod
-    def get_bars(self, tickers, bar_timeframe, num_of_bars):
+    def get_bars_OOP(self, tickers, bar_timeframe, num_of_bars):
         pass
 
     def on_open(self):
@@ -43,33 +45,39 @@ class DataHandler(ABC):
 
 
 class AlpacaDataHandler(DataHandler):
-    def __init__(self,API_key_id,API_secret_key,base_url,socket = "wss://data.alpaca.markets/stream"):
-        self.headers = {"APCA-API-KEY-ID":API_key_id, "APCA-API-SECRET-KEY":API_secret_key}
+    def __init__(self,
+                 api_key,
+                 secret_key,
+                 base_url,
+                 data_url,
+                 socket="ws://data.alpaca.markets/stream"):
+        self.api_key = api_key
+        self.secret_key = secret_key
+        self.headers = {
+            "APCA-API-KEY-ID": api_key,
+            "APCA-API-SECRET-KEY": secret_key
+        }
         self.base_url = base_url
-        self.account_url= "{}/v2/account".format(self.base_url)
+        self.account_url = "{}/v2/account".format(self.base_url)
         self.order_url = "{}/v2/orders".format(self.base_url)
-        self.api = tradeapi.REST(self.headers["APCA-API-KEY-ID"],self.headers["APCA-API-SECRET-KEY"],base_url)
+        self.api = tradeapi.REST(self.headers["APCA-API-KEY-ID"],
+                                 self.headers["APCA-API-SECRET-KEY"], base_url)
         self.api_account = self.api.get_account()
-        self.ws = websocket.WebSocketApp(socket, 
-                    on_message = lambda msg: self.on_message(msg),
-                    on_error   = lambda msg: self.on_error(msg),
-                    on_close   = lambda:     self.on_close(),
-                    on_open    = lambda:     self.on_open())
+        self.ws = None
+        self.socket = socket
+        self.pending_tickers = []
+
     
+
     def get_account(self):
         return self.api_account
 
     def set_account(self, account):
         self.acount = account
 
-    def set_socket(self,socket = "wss://data.alpaca.markets/stream"):
-        self.ws = websocket.WebSocketApp(socket, 
-                    on_message = lambda msg: self.on_message(msg),
-                    on_error   = lambda msg: self.on_error(msg),
-                    on_close   = lambda:     self.on_close(),
-                    on_open    = lambda:     self.on_open())
     def get_socket(self):
         return self.ws
+
 
     # 
     def get_bars(self, tickers, bar_timeframe, num_of_bars):
@@ -79,43 +87,75 @@ class AlpacaDataHandler(DataHandler):
         df = pd.read_json(r.json())
         return df
 
-    def on_open(self):
-        """
-        function called whenever a websocket is opened, authenticates with alpaca
-        """
-        print("opened-stream")
+
+    # Socket Functions
+    def on_open(self, ws):
+        print("on open")
+
+        # function called whenever a websocket is opened, authenticates with alpaca
+
         auth_data = {
             "action": "authenticate",
-            "data": {"key_id": config.API_KEY, "secret_key": config.SECRET_KEY}
+            "data": {
+                "key_id": self.api_key,
+                "secret_key": self.secret_key
+            }
         }
-        self.ws.send(json.dumps(auth_data))
+        ws.send(json.dumps(auth_data))
+        print("sent auth")
+        listen_message = {
+            "action": "listen",
+            "data": {
+                "streams": [f"AM.{self.pending_tickers.pop()}", "AM.GME"]
+            }
+        }
+        # check pending tickers, sne initial listen message, wait for new tickers,
+        ws.send(json.dumps(listen_message))
 
-    def on_message(self, message):
+    def on_message(self, ws, message):
         print("received a message")
         print(message)
 
-    def on_close(self):
+    def on_close(self, ws):
         print("closed connection")
 
-    def on_error(self, error):
+    def on_error(self, ws, error):
         print(error)
 
-    def listen(self,ticker,channel_name):
-        """
-        function that sends a listen message to alpaca for the streams inputed.
-        """
-        for x in range(ticker):
-            ticker[x] = channel_name + "." + ticker[x]
 
-        listen_message = {"action": "listen", "data": {"streams": ticker}}
+    def start_streaming(self, ticker):
+       
+        self.pending_tickers.append(ticker)
+        print(self.socket)
+        self.ws = websocket.WebSocketApp(
+            self.socket,
+            on_message=lambda ws, msg: self.on_message(self.ws, msg),
+            on_close=lambda ws: self.on_close(self.ws),
+            on_open=lambda ws: self.on_open(self.ws),
+            on_error=lambda ws, error: self.on_error(self.ws, error))
+
+        self.ws.run_forever()
+        print("HELLO")
+
+    def listen(self, tickers, channel_name):
+        #
+        # function that sends a listen message to alpaca for the streams inputed.
+        #
+        for x in range(len(tickers)):
+            tickers[x] = channel_name + "." + tickers[x]
+        print(tickers)
+        listen_message = {"action": "listen", "data": {"streams": tickers}}
         self.ws.send(json.dumps(listen_message))
+        #self.stream_conn.run(quote_callback, tickers)
 
-    def unlisten(self,ticker,channel_name):
-        """
-        function that unlistens for the streams inputed.
-            might need error checking if a stream that is not currently being listened to is asked to be unlistened.
-        """
+    def unlisten(self, ticker, channel_name):
+        #
+        # function that unlistens for the streams inputed.
+        #     might need error checking if a stream that is not currently being listened to is asked to be unlistened.
+        #
         for x in range(ticker):
             ticker[x] = channel_name + ticker[x]
         unlisten_message = {"action": "unlisten", "data": {"streams": ticker}}
         self.ws.send(json.dumps(unlisten_message))
+
+   
