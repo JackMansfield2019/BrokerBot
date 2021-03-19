@@ -1,43 +1,8 @@
-import websocket
-import requests
-import json
-from abc import ABC, abstractmethod  # Abstract class module for python.
-from alpaca_trade_api import StreamConn
-import alpaca_trade_api as tradeapi  # pip
-
-# Imports for testing various data structures, most will be removed soon.
-from dataclasses import dataclass  # Allows for struct-like classes in python.
-from numpy import array as np_array
-from timeit import Timer
-from typing import NamedTuple
-# from pandas import DataFrame as df
-import pandas as pd
-
-
-# Data format using a dataclass, one option for storage, may be heavy though.
-@dataclass
-class OOPBar:
-    __slots__ = ['time', 'open', 'high', 'low', 'close']
-    time: str  # Time in RFC339 format
-    open: float  # Opening price
-    high: float  # High price
-    low: float  # Low Price
-    close: float  # Closing price
-
-
-# Data format using a NamedTuple, is immutable but still may be heavy.
-
-
-class ImmutableBar(NamedTuple):
-    time: str  # Time in RFC339 format
-    open: float  # Opening price
-    high: float  # High price
-    low: float  # Low Price
-    close: float  # Closing price
-
-
-# Pandas Dataframe, a library used for python datascience, akin to a 2D table in Excel
-# 2D Numpy Array: a 2d array of these values used for quick iteration speed and minimal bloat.
+import config, websocket, requests, json # For web connectivity
+from abc import ABC, abstractmethod # Abstract class module for python.
+import alpaca_trade_api as tradeapi
+from dataclasses import dataclass # Python structs module.
+import pandas as pd # For data storage and analysis.
 
 
 # Abstract base class for the data handler, to facilitate different apis using subclasses.
@@ -113,27 +78,11 @@ class AlpacaDataHandler(DataHandler):
     def get_socket(self):
         return self.ws
 
-    def get_bars_OOP(self, tickers, bar_timeframe, num_of_bars):
 
-        url = 'https://data.alpaca.markets/v1/bars'+'/' + \
-            bar_timeframe+'?symbols='+tickers+'&limit='+num_of_bars
-        r = requests.get(url, headers=self.headers)
-        dict = json.dumps(r.json(), indent=4)
-        x = len(dict) / 5
-        arr = np_array(x)
-        for i in x:
-            arr[i] = OOPBar()
-            arr[i].time = dict[((i + 1) * 5) - 5]
-            arr[i].open = dict[((i + 1) * 5) - 4]
-            arr[i].high = dict[((i + 1) * 5) - 3]
-            arr[i].low = dict[((i + 1) * 5) - 2]
-            arr[i].close = dict[((i + 1) * 5) - 1]
-        return arr
-
-    def get_bars_pandas(self, tickers, bar_timeframe, num_of_bars):
-
-        url = 'https://data.alpaca.markets/v1/bars'+'/' + \
-            bar_timeframe+'?symbols='+tickers+'&limit='+num_of_bars
+    # 
+    def get_bars(self, tickers, bar_timeframe, num_of_bars):
+        
+        url = 'https://data.alpaca.markets/v1/bars'+'/'+bar_timeframe+'?symbols='+tickers+'&limit='+num_of_bars
         r = requests.get(url, headers=self.headers)
         df = pd.read_json(r.json())
         return df
