@@ -86,6 +86,7 @@ class AlpacaExecutionHandler(ExecutionHandler):
 
     def create_order(self, symbol, qty, side, type, time_in_force,
                      order_class=None, take_profit=None, stop_loss=None,
+                     limit_price=None, stop_price=None,
                      trail_price=None, trail_percent=None,
                      extended_hours=False, client_order_id=None):
         data = {
@@ -94,6 +95,8 @@ class AlpacaExecutionHandler(ExecutionHandler):
             "side": side,
             "type": type,
             "time_in_force": time_in_force,
+            "limit_price": limit_price,
+            "stop_price": stop_price,
             "trail_price": trail_price,
             "trail_percent": trail_percent,
             "extended_hours": extended_hours,
@@ -111,6 +114,7 @@ class AlpacaExecutionHandler(ExecutionHandler):
 
     def create_order_notional(self, symbol, notional, side, order_class=None,
                               take_profit=None, stop_loss=None,
+                              limit_price=None, stop_price=None,
                               trail_price=None, trail_percent=None,
                               extended_hours=False, client_order_id=None):
         data = {
@@ -119,6 +123,8 @@ class AlpacaExecutionHandler(ExecutionHandler):
             "side": side,
             "type": 'market',
             "time_in_force": 'day',
+            "limit_price": limit_price,
+            "stop_price": stop_price,
             "trail_price": trail_price,
             "trail_percent": trail_percent,
             "extended_hours": extended_hours,
