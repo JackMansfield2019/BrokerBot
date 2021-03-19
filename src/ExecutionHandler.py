@@ -55,6 +55,14 @@ class ExecutionHandler(ABC):
     def close_all_pos(self):
         pass
 
+    @abstractmethod
+    def bracket_order(self):
+        pass
+
+    @abstractmethod
+    def dynamic_stop_loss(self):
+        pass
+
 
 class AlpacaExecutionHandler(ExecutionHandler):
 
@@ -64,28 +72,28 @@ class AlpacaExecutionHandler(ExecutionHandler):
         self.order_url = "{}/v2/orders".format(self.base_url)
         self.headers = {"APCA-API-KEY-ID": API_key_id,
                         "APCA-API-SECRET-KEY": API_secret_key}
-        self.api = tradeapi.REST(headers[APCA-API-KEY-ID],
-                                 headers[APCA-API-SECRET-KEY], base_url)
+        self.api = tradeapi.REST(self.headers["APCA-API-KEY-ID"],
+                                 self.headers["APCA-API-SECRET-KEY"], base_url)
         self.api_account = self.api.get_account()
         self.account_cash = self.api_account.cash
         self.position_url = "{}/v2/positions".format(self.base_url)
+        self.symbol = None
+        self.qty = 0
+        self.orderID = None
 
     def get_account(self):
         return self.api_account
 
     def create_order(self, symbol, qty, side, type, time_in_force,
-                     limit_price=None, stop_price=None, trail_price=None,
-                     trail_percent=None, extended_hours=False,
-                     client_order_id=None, order_class=None, take_profit=None,
-                     stop_loss=None):
+                     order_class=None, take_profit=None, stop_loss=None,
+                     trail_price=None, trail_percent=None,
+                     extended_hours=False, client_order_id=None):
         data = {
             "symbol": symbol,
             "qty": qty,
             "side": side,
             "type": type,
             "time_in_force": time_in_force,
-            "limit_price": limit_price,
-            "stop_price": stop_price,
             "trail_price": trail_price,
             "trail_percent": trail_percent,
             "extended_hours": extended_hours,
@@ -95,23 +103,22 @@ class AlpacaExecutionHandler(ExecutionHandler):
             "stop_loss": stop_loss
             }
 
-        r = requests.post(order_url, json=data, headers=self.headers)
+        r = requests.post(self.order_url, json=data, headers=self.headers)
+        self.orderID = json.loads(r.content)['id']
+        self.symbol = symbol
+        self.qty = qty
         return json.loads(r.content)
 
-    def create_order_notional(self, symbol, notional, side,
-                              limit_price=None, stop_price=None,
+    def create_order_notional(self, symbol, notional, side, order_class=None,
+                              take_profit=None, stop_loss=None,
                               trail_price=None, trail_percent=None,
-                              extended_hours=False, client_order_id=None,
-                              order_class=None, take_profit=None,
-                              stop_loss=None):
+                              extended_hours=False, client_order_id=None):
         data = {
             "symbol": symbol,
             "notional": notional,
             "side": side,
             "type": 'market',
             "time_in_force": 'day',
-            "limit_price": limit_price,
-            "stop_price": stop_price,
             "trail_price": trail_price,
             "trail_percent": trail_percent,
             "extended_hours": extended_hours,
@@ -121,7 +128,10 @@ class AlpacaExecutionHandler(ExecutionHandler):
             "stop_loss": stop_loss
             }
 
-        r = requests.post(order_url, json=data, headers=self.headers)
+        r = requests.post(self.order_url, json=data, headers=self.headers)
+        self.orderID = json.loads(r.content)['id']
+        self.symbol = symbol
+        self.qty = qty
         return json.loads(r.content)
 
     def get_orders(self):
@@ -182,3 +192,32 @@ class AlpacaExecutionHandler(ExecutionHandler):
     def close_all_pos(self):
         r = requests.delete(self.position_url, headers=self.headers)
         return json.loads(r.content)
+
+    def bracket_order(self, symbol, qty, side, loss, profit, limit=None):
+        take_profit = {
+            "limit_price": profit
+        }
+        stop_loss = {
+            "stop_price": loss,
+            "limit_price": limit
+        }
+        r = create_order(symbol, qty, side, "market", "gtc",
+                         "bracket", take_profit, stop_loss)
+        return r
+
+    def bracket_order_notional(self, symbol, notional, side, loss, profit,
+                               limit=None):
+        take_profit = {
+            "limit_price": profit
+        }
+        stop_loss = {
+            "stop_price": loss,
+            "limit_price": limit
+        }
+        r = create_order_notional(symbol, notional, side, "bracket",
+                                  take_profit, stop_loss)
+        return r
+
+    def dynamic_stop_loss(self, stop, limit=None):
+        r = replace_order(self.orderID, self.qty, "gtc", limit, stop)
+        return r
