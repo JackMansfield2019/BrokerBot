@@ -86,6 +86,8 @@ class AlpacaExecutionHandler(ExecutionHandler):
         self.orderID = None
 
     """
+    overview: returns the alpaca api account
+
     modifies: nothing.
     effects:  nothing.
     returns: alpaca api account object
@@ -94,6 +96,9 @@ class AlpacaExecutionHandler(ExecutionHandler):
         return self.api_account
 
     """
+    overview: Places a quantity order based on parameters and updates variables
+              accordingly.
+
     params: symbol = stock symbol to identify asset to trade
             qty = number of shares to trade
             side = buy or sell
@@ -145,6 +150,9 @@ class AlpacaExecutionHandler(ExecutionHandler):
         return json.loads(r.content)
 
     """
+    overview: Places a notional order based on parameters and updates variables
+              accordingly.
+
     params: symbol = stock symbol to identify asset to trade
             notional = dollar amount to trade.
             side = buy or sell
@@ -194,6 +202,8 @@ class AlpacaExecutionHandler(ExecutionHandler):
         return json.loads(r.content)
 
     """
+    overview: gets all orders
+
     modifies: none
     effects:  none
     returns: json containing all orders
@@ -203,6 +213,8 @@ class AlpacaExecutionHandler(ExecutionHandler):
         return json.loads(r.content)
 
     """
+    overview: checks if alpaca account has ability to trade or not
+
     modifies: none
     effects:  none
     returns: True if account is able to trade. False otherwise
@@ -214,6 +226,8 @@ class AlpacaExecutionHandler(ExecutionHandler):
         return True
 
     """
+    overview:
+
     modifies:
     effects:
     returns:
@@ -225,6 +239,9 @@ class AlpacaExecutionHandler(ExecutionHandler):
         return
 
     """
+    overview: determines number of shares to buy based on explicitly specified
+              cap value and risk value
+
     params: cap = percent of account balance to risk
             risk = stop loss amount. Ex. If share is 100 and stop_loss = 95,
                    risk is 100-95=5
@@ -239,6 +256,9 @@ class AlpacaExecutionHandler(ExecutionHandler):
         return self.qty
 
     """
+    overview: determines number of shares to buy based on win rate and win/loss
+              ratio determined from historical data
+
     params: win = win rate.
             ratio = win/loss rate
     modifies: self.qty
@@ -253,6 +273,8 @@ class AlpacaExecutionHandler(ExecutionHandler):
         return self.qty
 
     """
+    overview: replaces an order based on specified parameters
+
     params: orderid = alpaca order id for a particular trade
             qty = new updated quantity if changed
             time_in_force = day, gtc, opg, cls, ioc, fok
@@ -281,6 +303,8 @@ class AlpacaExecutionHandler(ExecutionHandler):
         return json.loads(r.content)
 
     """
+    overview: cancels an order based on specified orderid
+
     params: orderid = alpaca order id for a particular trade
     modifies: none
     effects:  none
@@ -292,6 +316,8 @@ class AlpacaExecutionHandler(ExecutionHandler):
         return json.loads(r.content)
 
     """
+    overview: cancels all existing orders
+
     modifies: none
     effects:  none
     returns: json containing order details
@@ -301,6 +327,8 @@ class AlpacaExecutionHandler(ExecutionHandler):
         return json.loads(r.content)
 
     """
+    overview: get details of an open position based on specified symbol
+
     params: symbol = symbol to check positions
     modifies: none
     effects:  none
@@ -312,6 +340,8 @@ class AlpacaExecutionHandler(ExecutionHandler):
         return json.loads(r.content)
 
     """
+    overview: closes a position based on specified symbol
+
     params: symbol = symbol to close
     modifies: none
     effects:  none
@@ -323,6 +353,8 @@ class AlpacaExecutionHandler(ExecutionHandler):
         return json.loads(r.content)
 
     """
+    overview: closes all positions
+
     params: none
     modifies: none
     effects:  none
@@ -333,6 +365,8 @@ class AlpacaExecutionHandler(ExecutionHandler):
         return json.loads(r.content)
 
     """
+    overview: creates a quantity bracket order based on specified parameters
+
     params: symbol = stock symbol to identify asset to trade
             qty = number of shares to trade
             side = buy or sell
@@ -356,6 +390,8 @@ class AlpacaExecutionHandler(ExecutionHandler):
         return r
 
     """
+    overview: creates a notional brack order based on specified parameters
+
     params: symbol = stock symbol to identify asset to trade
             notional = dollar amount to trade
             side = buy or sell
@@ -380,6 +416,9 @@ class AlpacaExecutionHandler(ExecutionHandler):
         return r
 
     """
+    overview: dynamically adjusts the stop loss value of an order based on
+              incoming data. stop value should never decrease
+
     params: stop = stop loss number
             limit = stop limit number. Default none
     modifies: none
