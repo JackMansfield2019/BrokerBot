@@ -79,10 +79,14 @@ class AlpacaDataHandler(DataHandler):
         return self.ws
 
 
-    # 
-    def get_bars(self, tickers, bar_timeframe, num_of_bars):
-        
-        url = 'https://data.alpaca.markets/v1/bars'+'/'+bar_timeframe+'?symbols='+tickers+'&limit='+num_of_bars
+    """
+    requires: ticker for given stock, start time for bar data, end time of bar data, and length of bar.
+    modifies: nothing.
+    effects:  nothing.
+    returns: a Pandas Dataframe containing the bars data in BrokerBot Standard Format.
+    """
+    def get_bars(self, ticker, start_time, end_time, bar_length):
+        url = 'https://data.alpaca.markets/v2/stocks'+'/'+'?symbol='+ticker+'/bars'+'&start='+start_time+'&end='+end_time+'&timeframe='+bar_length
         r = requests.get(url, headers=self.headers)
         df = pd.read_json(r.json())
         return df
