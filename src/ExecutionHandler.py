@@ -1,4 +1,3 @@
-import config
 import requests
 import json
 import alpaca_trade_api as tradeapi
@@ -295,7 +294,7 @@ class AlpacaExecutionHandler(ExecutionHandler):
             "order_class": order_class,
             "take_profit": take_profit,
             "stop_loss": stop_loss
-            }
+        }
 
         r = requests.post(self.order_url, json=data, headers=self.headers)
         self.orderID = json.loads(r.content)['id']
@@ -346,7 +345,7 @@ class AlpacaExecutionHandler(ExecutionHandler):
             "order_class": order_class,
             "take_profit": take_profit,
             "stop_loss": stop_loss
-            }
+        }
 
         r = requests.post(self.order_url, json=data, headers=self.headers)
         self.orderID = json.loads(r.content)['id']
@@ -419,7 +418,7 @@ class AlpacaExecutionHandler(ExecutionHandler):
             "stop_price": stop_price,
             "trail": trail,
             "client_order_id": client_order_id,
-            }
+        }
         self.qty = qty
         r = requests.patch(replace_url, json=data, headers=self.headers)
         return json.loads(r.content)

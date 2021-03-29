@@ -2,29 +2,31 @@
 # import ExecutionHandler
 # import PortfolioManager
 # import StrategyHandler
-from DataHandler import AlpacaDataHandler
+from StrategyHandler import StrategyHandler
 from threading import Thread
 import time
+from multiprocessing import Process
+import os
 
 
 class BrokerBot:
-    def __init__(self, api_key, secret_key, base_url, data_url):
+    def __init__(self, api_key, secret_key, base_url, socket):
 
         self.headers = {
             "APCA-API-KEY-ID": api_key,
             "APCA-API-SECRET-KEY": secret_key
         }
 
+        self.market_open = True
         self.api_key = api_key
         self.secret_key = secret_key
         self.base_url = base_url
-        self.data_url = data_url
+        self.socket = socket
 
         self.account_url = "{}/v2/account".format(self.base_url)
         self.order_url = "{}/v2/orders".format(self.base_url)
 
-        self.data_handler = AlpacaDataHandler(self.api_key, self.secret_key,
-                                              self.base_url, self.data_url, "ws://127.0.0.1:8765")
+        self.strategy_handler_processes = []
 
         # self.stream_conn = StreamConn(
         #     api_key,
@@ -33,19 +35,32 @@ class BrokerBot:
         #     data_url=URL(self.data_url)
         # )
 
+    def set_market_close(self):
+        self.market_open = False
+
     def get_account(self):
         r = requests.get(self.account_url, headers)
         return json.loads(r.content)
 
-    def test_stream_data(self, ticker):
-        listening_thread = Thread(target = self.data_handler.start_streaming, args=(ticker,))
-        listening_thread.start()
-        time.sleep(10)
-        update_channel_thread = Thread(target=self.data_handler.listen, args=(["AMC"], "T",))
+    # Start SH on own process via multiprocessing
+    # TODO: figure out strategy logic/pipeline
+    def run(self):
+        stragies = ["ST1", "ST2", "ST3"]
+        sh_instances = []
+        sh_processes = []
+        for strat in stragies:
+            sh_instances.append(StrategyHandler(
+                self.api_key, self.secret_key, self.base_url, self.socket, strat))
 
-        update_channel_thread.start()
-        # print()
-        # self.data_handler.run_socket()
-        # self.data_handler.listen([ticker], "T")
+        for sh in sh_instances:
+            sh_processes.append(Process(target=sh.run, args=()))
 
-        # self.data_handler.listen([ticker], "T")
+        for proc in sh_processes:
+            proc.start()
+
+        while True:
+            if not self.market_open:
+                for proc in sh_processes:
+                    proc.join()
+            else:
+                time.sleep(60)

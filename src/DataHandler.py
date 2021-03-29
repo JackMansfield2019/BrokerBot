@@ -1,8 +1,10 @@
-import config, websocket, requests, json # For web connectivity
-from abc import ABC, abstractmethod # Abstract class module for python.
+import websocket
+import requests
+import json  # For web connectivity
+from abc import ABC, abstractmethod  # Abstract class module for python.
 import alpaca_trade_api as tradeapi
-from dataclasses import dataclass # Python structs module.
-import pandas as pd # For data storage and analysis.
+from dataclasses import dataclass  # Python structs module.
+import pandas as pd  # For data storage and analysis.
 
 
 """
@@ -26,10 +28,12 @@ TODO:
     - Support more API subclasses.
     -  
 """
-class DataHandler(ABC):
-#==================== Creators ====================
 
-#==================== Observers ===================
+
+class DataHandler(ABC):
+    # ==================== Creators ====================
+
+    # ==================== Observers ===================
     """
     requires: nothing.
     modifies: nothing.
@@ -49,8 +53,8 @@ class DataHandler(ABC):
     def get_socket(self):
         pass
 
-#==================== Producers ===================
-    
+# ==================== Producers ===================
+
     """
     requires: ticker for given stock, start time for bar data, end time of bar data, and length of bar.
     modifies: nothing.
@@ -62,8 +66,7 @@ class DataHandler(ABC):
         pass
 
 
-
-#==================== Mutators ====================
+# ==================== Mutators ====================
     """
     requires: The new account to set this one to.
     modifies: The current account object, replacing it with the argument account.
@@ -74,11 +77,8 @@ class DataHandler(ABC):
     def set_account(self, account):
         pass
 
-    @abstractmethod
-    def set_socket(self):
-        pass
 
-#===================== Misc =======================
+# ===================== Misc =======================
 
     @abstractmethod
     def on_open(self):
@@ -127,8 +127,6 @@ class AlpacaDataHandler(DataHandler):
         self.socket = socket
         self.pending_tickers = []
 
-    
-
     def get_account(self):
         return self.api_account
 
@@ -138,15 +136,15 @@ class AlpacaDataHandler(DataHandler):
     def get_socket(self):
         return self.ws
 
-
     def get_bars(self, ticker, start_time, end_time, bar_timeframe):
-        url = self.base_url +'/v2/stocks'+'/'+'?symbol='+ticker+'/bars'+'&start='+start_time+'&end='+end_time+'&timeframe='+bar_timeframe
+        url = self.base_url + '/v2/stocks'+'/'+'?symbol='+ticker+'/bars' + \
+            '&start='+start_time+'&end='+end_time+'&timeframe='+bar_timeframe
         r = requests.get(url, headers=self.headers)
         df = pd.read_json(r.json())
         return df
 
-
     # Socket Functions
+
     def on_open(self, ws):
         print("on open")
 
@@ -180,9 +178,8 @@ class AlpacaDataHandler(DataHandler):
     def on_error(self, ws, error):
         print(error)
 
-
     def start_streaming(self, ticker):
-       
+
         self.pending_tickers.append(ticker)
         print(self.socket)
         self.ws = websocket.WebSocketApp(
@@ -215,5 +212,3 @@ class AlpacaDataHandler(DataHandler):
             ticker[x] = channel_name + ticker[x]
         unlisten_message = {"action": "unlisten", "data": {"streams": ticker}}
         self.ws.send(json.dumps(unlisten_message))
-
-   
