@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod  # Abstract class module for python.
 import alpaca_trade_api as tradeapi
 from dataclasses import dataclass  # Python structs module.
 import pandas as pd  # For data storage and analysis.
-
+import ast
 
 """
 overview:
@@ -171,11 +171,25 @@ class AlpacaDataHandler(DataHandler):
         }
         # check pending tickers, sne initial listen message, wait for new tickers,
         ws.send(json.dumps(listen_message))
-
+        
+    """
+    requires: Reference to the WebSocketApp and the message that was receieved.
+    modifies: nothing.
+    effects:  Sends a DataFrame to SH via the pipe.
+    returns:  nothing.
+    """
     def on_message(self, ws, message):
-        # print("received a message")
-        # print(message)
-        self.sh_pipe_conn.send(message)
+        print("received a message")
+        print(message)
+        # convert message to dictionary
+        message = ast.literal_eval(message)
+        # message is not an authorization or listening message, so it must be a tick message
+        if message["stream"] != "authorization" and message["stream"] != "listening":
+            df = pd.DataFrame.from_dict(message)
+            df = df.drop(columns=["stream"])
+            # send DF to SH?
+            # trim rows/reconfigure DF before sending?
+            self.sh_pipe_conn.send(df)
 
     def on_close(self, ws):
         print("closed connection")
