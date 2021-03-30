@@ -6,15 +6,19 @@ from abc import ABC, abstractmethod
 
 class ExecutionHandler(ABC):
 
+    """
+    Overview: Abstract Class for the ExecutionHandler. Outlines essential
+    function signatures.
+    """
+    # ====================Creators====================
+
+    @abstractmethod
+    def __init__(self):
+        pass
+    # ====================Observers====================
+
     @abstractmethod
     def get_account(self):
-        pass
-
-    @abstractmethod
-    def create_order(self):
-        pass
-
-    def create_order_notional(self):
         pass
 
     @abstractmethod
@@ -23,22 +27,6 @@ class ExecutionHandler(ABC):
 
     @abstractmethod
     def check_limitations(self):
-        pass
-
-    @abstractmethod
-    def trade_signal(self):
-        pass
-
-    @abstractmethod
-    def money_alloc_pre(self):
-        pass
-
-    @abstractmethod
-    def money_alloc_post(self):
-        pass
-
-    @abstractmethod
-    def replace_order(self):
         pass
 
     def cancel_order(self):
@@ -70,8 +58,44 @@ class ExecutionHandler(ABC):
     def fill_order(self):
         pass
 
+    # ====================Mutators====================
+
+    @abstractmethod
+    def create_order(self):
+        pass
+
+    def create_order_notional(self):
+        pass
+
+    @abstractmethod
+    def trade_signal(self):
+        pass
+
+    @abstractmethod
+    def money_alloc_pre(self):
+        pass
+
+    @abstractmethod
+    def money_alloc_post(self):
+        pass
+
+    @abstractmethod
+    def replace_order(self):
+        pass
+
 
 class AlpacaExecutionHandler(ExecutionHandler):
+
+    """
+    Overview: ExecutionHandler class: ExecutionHandler is a class that takes in
+              data from given brokerage API, receives signals from the
+              StrategyHandler, and puts in buy/sell order requests through
+              said API. StrategyHandler determines which stock to buy.
+              ExecutionHandler decides how many shares to buy based on
+              information passed in from the StrategyHandler. The symbol,
+              quantity or notional, and current OrderID are stored as
+              local variables.
+    """
 
     # ====================Creators====================
 
@@ -99,15 +123,6 @@ class AlpacaExecutionHandler(ExecutionHandler):
     def get_account(self):
         return self.api_account
 
-    # overview: gets all orders
-    #
-    # modifies: none
-    # effects:  none
-    # returns: json containing all orders
-    def get_orders(self):
-        r = requests.get(self.order_url, headers=self.headers)
-        return json.loads(r.content)
-
     # overview: checks if alpaca account has ability to trade or not
     #
     # modifies: none
@@ -115,7 +130,7 @@ class AlpacaExecutionHandler(ExecutionHandler):
     # returns: True if account is able to trade. False otherwise
     def check_limitations(self):
         if(self.api_account.trading_blocked or
-           self.api_account.account_blocked or self.account_cash <= 0):
+           self.api_account.account_blocked or float(self.account_cash) <= 0):
             return False
         return True
 
@@ -182,40 +197,13 @@ class AlpacaExecutionHandler(ExecutionHandler):
     # modifies: none
     # effects:  none
     # returns: json containing order details
-    def bracket_order(self, symbol, qty, side, loss, profit, limit=None):
-        take_profit = {
-            "limit_price": profit
-        }
+    def bracket_order(self, symbol, qty, side, loss, limit=None):
         stop_loss = {
             "stop_price": loss,
             "limit_price": limit
         }
-        r = create_order(symbol, qty, side, "market", "gtc",
-                         "bracket", take_profit, stop_loss)
-        return r
-
-    # overview: creates a notional brack order based on specified parameters
-    #
-    # params: symbol = stock symbol to identify asset to trade
-    #         notional = dollar amount to trade
-    #         side = buy or sell
-    #         loss = specified stop loss price
-    #         profit = specified profit price
-    #         limit = specified limit price. None default
-    # modifies: none
-    # effects:  none
-    # returns: json containing order details
-    def bracket_order_notional(self, symbol, notional, side, loss, profit,
-                               limit=None):
-        take_profit = {
-            "limit_price": profit
-        }
-        stop_loss = {
-            "stop_price": loss,
-            "limit_price": limit
-        }
-        r = create_order_notional(symbol, notional, side, "bracket",
-                                  take_profit, stop_loss)
+        r = self.create_order(symbol, qty, side, "market", "gtc",
+                              "oto", None, stop_loss)
         return r
 
     # overview: dynamically adjusts the stop loss value of an order based on
@@ -227,7 +215,8 @@ class AlpacaExecutionHandler(ExecutionHandler):
     # effects:  none
     # returns: json containing order details
     def dynamic_stop_loss(self, stop, limit=None):
-        r = replace_order(self.orderID, self.qty, "gtc", limit, stop)
+        self.get_orders()
+        r = self.replace_order(self.orderID, self.qty, "gtc", limit, stop)
         return r
 
     # overview: loops until order is filled
@@ -238,7 +227,7 @@ class AlpacaExecutionHandler(ExecutionHandler):
     # effects:  none
     # returns: none
     def fill_order(self, orderID):
-        order = self.order_url + '/' + orderid
+        order = self.order_url + '/' + orderID
         r = requests.get(order, headers=self.headers)
         status = json.loads(r.content)['status']
         while(status != "filled"):
@@ -300,7 +289,7 @@ class AlpacaExecutionHandler(ExecutionHandler):
         self.orderID = json.loads(r.content)['id']
         self.symbol = symbol
         self.qty = qty
-        fill_order(self, self.orderID)
+        self.fill_order(self.orderID)
         return json.loads(r.content)
 
     # overview: Places a notional order based on parameters and updates
@@ -350,8 +339,19 @@ class AlpacaExecutionHandler(ExecutionHandler):
         r = requests.post(self.order_url, json=data, headers=self.headers)
         self.orderID = json.loads(r.content)['id']
         self.symbol = symbol
-        self.qty = qty
-        fill_order(self, self.orderID)
+        self.fill_order(self.orderID)
+        return json.loads(r.content)
+
+    # overview: gets all active orders
+    #
+    # modifies: self.orderID
+    # effects:  self.orderID = most recent orderID if available
+    # returns: json containing all orders
+    def get_orders(self):
+        r = requests.get(self.order_url, headers=self.headers)
+        length = len(json.loads(r.content))
+        self.orderID = json.loads(r.content)[length-1]['id']
+        self.qty = json.loads(r.content)[length-1]['qty']
         return json.loads(r.content)
 
     # overview:
@@ -419,6 +419,5 @@ class AlpacaExecutionHandler(ExecutionHandler):
             "trail": trail,
             "client_order_id": client_order_id,
         }
-        self.qty = qty
         r = requests.patch(replace_url, json=data, headers=self.headers)
         return json.loads(r.content)
