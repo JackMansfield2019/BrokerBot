@@ -1,45 +1,106 @@
-import config, websocket, requests, json # For web connectivity
-from abc import ABC, abstractmethod # Abstract class module for python.
+import websocket
+import requests
+import json  # For web connectivity
+from abc import ABC, abstractmethod  # Abstract class module for python.
 import alpaca_trade_api as tradeapi
-from dataclasses import dataclass # Python structs module.
-import pandas as pd # For data storage and analysis.
+from dataclasses import dataclass  # Python structs module.
+import pandas as pd  # For data storage and analysis.
+import ast
+
+"""
+overview:
+    - DataHandler Class: DataHandler is a class that takes in data from a given brokerage API,
+      and sends it through to the StrategyHandler in a format that it can natively understand.
+      in short, it is responsible for data transfer and formatting.
+
+    - Standard Data Format (BBFrame): BBFrame is the standard data format used in the BrokerBot
+      project. it consists of a Pandas dataframe in the following configuration:
+            ================================================================
+            |      |  Time  |  Open  |  High  |  Low  |  Close  |  Volume  | <- Labelled columns
+            |  01  | string |  float |  float | float |  float  |   float  | 
+            |  02  | string |  float |  float | float |  float  |   float  | 
+            ================================================================
+               ^^
+               auto-numbered rows (see pandas Dataframe for more info.)
+
+TODO: 
+    - More concretely define abstract methods for base class.
+    - Support more API subclasses.
+    -  
+"""
 
 
-# Abstract base class for the data handler, to facilitate different apis using subclasses.
 class DataHandler(ABC):
+    # ==================== Creators ====================
+
+    # ==================== Observers ===================
+    """
+    requires: nothing.
+    modifies: nothing.
+    effects:  nothing.
+    returns:  an account object for the API.
+    """
     @abstractmethod
     def get_account(self):
         pass
+    """
+    requires: nothing.
+    modifies: nothing.
+    effects:  nothing.
+    returns:  the socket object for the API.
+    """
+    @abstractmethod
+    def get_socket(self):
+        pass
 
+# ==================== Producers ===================
+
+    """
+    requires: ticker for given stock, start time for bar data, end time of bar data, and length of bar.
+    modifies: nothing.
+    effects:  nothing.
+    returns:  a Pandas Dataframe containing the bars data in BrokerBot Standard Format (BBFrame).
+    """
+    @abstractmethod
+    def get_bars(self, tickers, bar_timeframe, num_of_bars):
+        pass
+
+
+# ==================== Mutators ====================
+    """
+    requires: The new account to set this one to.
+    modifies: The current account object, replacing it with the argument account.
+    effects:  nothing.
+    returns:  nothing.
+    """
     @abstractmethod
     def set_account(self, account):
         pass
 
-    def set_socket(self):
-        pass
 
-    def get_socket(self):
-        pass
+# ===================== Misc =======================
 
     @abstractmethod
-    def get_bars_OOP(self, tickers, bar_timeframe, num_of_bars):
-        pass
-
     def on_open(self):
         pass
 
+    @abstractmethod
     def on_message(self):
         pass
 
+    @abstractmethod
     def on_close(self):
         pass
 
+    @abstractmethod
     def on_error(self):
         pass
 
+    @abstractmethod
     def listen(self):
         pass
 
+    @abstractmethod
     def unlisten(self):
         pass
 
@@ -49,7 +110,6 @@ class AlpacaDataHandler(DataHandler):
                  api_key,
                  secret_key,
                  base_url,
-                 data_url,
                  socket="ws://data.alpaca.markets/stream"):
         self.api_key = api_key
         self.secret_key = secret_key
@@ -66,8 +126,10 @@ class AlpacaDataHandler(DataHandler):
         self.ws = None
         self.socket = socket
         self.pending_tickers = []
+        self.sh_pipe_conn = None
 
-    
+    def set_pipe_conn(self, conn):
+        self.sh_pipe_conn = conn
 
     def get_account(self):
         return self.api_account
@@ -78,21 +140,15 @@ class AlpacaDataHandler(DataHandler):
     def get_socket(self):
         return self.ws
 
-
-    """
-    requires: ticker for given stock, start time for bar data, end time of bar data, and length of bar.
-    modifies: nothing.
-    effects:  nothing.
-    returns: a Pandas Dataframe containing the bars data in BrokerBot Standard Format.
-    """
-    def get_bars(self, ticker, start_time, end_time, bar_length):
-        url = 'https://data.alpaca.markets/v2/stocks'+'/'+'?symbol='+ticker+'/bars'+'&start='+start_time+'&end='+end_time+'&timeframe='+bar_length
+    def get_bars(self, ticker, start_time, end_time, bar_timeframe):
+        url = self.base_url + '/v2/stocks'+'/'+'?symbol='+ticker+'/bars' + \
+            '&start='+start_time+'&end='+end_time+'&timeframe='+bar_timeframe
         r = requests.get(url, headers=self.headers)
         df = pd.read_json(r.json())
         return df
 
-
     # Socket Functions
+
     def on_open(self, ws):
         print("on open")
 
@@ -115,10 +171,25 @@ class AlpacaDataHandler(DataHandler):
         }
         # check pending tickers, sne initial listen message, wait for new tickers,
         ws.send(json.dumps(listen_message))
-
+        
+    """
+    requires: Reference to the WebSocketApp and the message that was receieved.
+    modifies: nothing.
+    effects:  Sends a DataFrame to SH via the pipe.
+    returns:  nothing.
+    """
     def on_message(self, ws, message):
         print("received a message")
         print(message)
+        # convert message to dictionary
+        message = ast.literal_eval(message)
+        # message is not an authorization or listening message, so it must be a tick message
+        if message["stream"] != "authorization" and message["stream"] != "listening":
+            df = pd.DataFrame.from_dict(message)
+            df = df.drop(columns=["stream"])
+            # send DF to SH?
+            # trim rows/reconfigure DF before sending?
+            self.sh_pipe_conn.send(df)
 
     def on_close(self, ws):
         print("closed connection")
@@ -126,9 +197,8 @@ class AlpacaDataHandler(DataHandler):
     def on_error(self, ws, error):
         print(error)
 
-
     def start_streaming(self, ticker):
-       
+
         self.pending_tickers.append(ticker)
         print(self.socket)
         self.ws = websocket.WebSocketApp(
@@ -161,5 +231,3 @@ class AlpacaDataHandler(DataHandler):
             ticker[x] = channel_name + ticker[x]
         unlisten_message = {"action": "unlisten", "data": {"streams": ticker}}
         self.ws.send(json.dumps(unlisten_message))
-
-   

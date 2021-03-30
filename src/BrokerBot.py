@@ -1,13 +1,15 @@
 # import DataHandler
 # import ExecutionHandler
 # import PortfolioManager
-import StrategyHandler
+from StrategyHandler import StrategyHandler
 from DataHandler import AlpacaDataHandler
 from threading import Thread
 from queue import PriorityQueue
 from enum import Enum
 import ENUMS
 import time
+from multiprocessing import Process
+import os
 
 """
 overview: (description of the class)
@@ -26,47 +28,55 @@ class BrokerBot:
 
 #====================Creators====================
     '''
-        Overview: returns the previous 5-minute-volume for the given stock by the client 
+        Overview: constructs a BrokerBot instance. 
 
-        Requires: stock is not null
-        Modifies: none
-        Effects: none
+        Requires: api_key: the api key for the api this instance uses.
+                  secret_key: the sectet key for the api this instance constructs.
+                  base_url: the base url of the api.
+                  socket: the socket url for communication with the api
+        Modifies: headers,market_open,api_key,secret_key,base_url,socket,account_url
+                  order_url,strategy_handler_processes.
+        Effects: headers is inilized and contains api_key, and secret_key
+                 market_open = true
+                 api_key stores the api key
+                 base_url stores the api's base url
+                 socket contian the api's socket port.
+                 account url stores a formatted url for the account(alpaca only)
+                 order url stores a formatted url for the orders(alpaca only)
+                 strategy_handler_processes is inilized to an empty list
         Returns: volume of the stock that was passed in 
-
+        Throws: RunTimeException if any parameter is null.
         TODO: How many tickers are we limited to per API request? Answer: 200 
         sockets limited to 30 
     '''
-    def __init__(self, api_key, secret_key, base_url, data_url):
+    def __init__(self, api_key, secret_key, base_url, socket):
+        if api_key is None or secret_key is None or base_url is None or socket is None:
+            raise RuntimeError('BrokerBot initalized with a null') from exc
+
         self.headers = {
             "APCA-API-KEY-ID": api_key,
             "APCA-API-SECRET-KEY": secret_key
         }
 
+        self.market_open = True
         self.api_key = api_key
         self.secret_key = secret_key
         self.base_url = base_url
-        self.data_url = data_url
+        self.socket = socket
 
         self.account_url = "{}/v2/account".format(self.base_url)
         self.order_url = "{}/v2/orders".format(self.base_url)
-
-        self.data_handler = AlpacaDataHandler(self.api_key, self.secret_key,
-                                              self.base_url, self.data_url, "ws://127.0.0.1:8765")
-        self.strategy_handlers = []
-        self.strategy_handler.append(self.api_key, self.secret_key, self.base_url, self.data_url,self.order_url)
-        #self.priority_queue = PriorityQueue()
-        
+        self.strategy_handler_processes = []
 #====================Observers====================
     '''
-        Overview: spins up Trades on  
+        Overview: returns the account
 
         Requires: none
         Modifies: none
         Effects: none
-        Returns: none
-        Throws: RuntimeError on execution
-
-        TODO: Specfification
+        Returns: a joson containing the contents of the account.
+        Throws: ???
+        TODO: figure out what this Might throw
     '''
     def get_account(self):
         r = requests.get(self.account_url, headers)
@@ -74,32 +84,20 @@ class BrokerBot:
 #====================Producers====================
 #====================Mutators====================
     '''
-        Overview: Creates & runs a Data handler thread that listens to ticker 
+        Overview: sets market_open to false
 
-        Requires: Ticker list of strings containg ticker symbols
-        Modifies: Data_handler
-        Effects: Data_handler is initalized and listens to tickers
+        Requires: none
+        Modifies: market_open
+        Effects: market_open set to false
         Returns: none
         Throws: none
-
-        TODO: Specfification
+        TODO:
     '''
-    def test_stream_data(self, ticker):
-        listening_thread = Thread(target = self.data_handler.start_streaming, args=(ticker,))
-        listening_thread.start()
-        time.sleep(10)
-        update_channel_thread = Thread(target=self.data_handler.listen, args=(["AMC"], "T",))
-
-        update_channel_thread.start()
-        # print()
-        # self.data_handler.run_socket()
-        # self.data_handler.listen([ticker], "T")
-
-        # self.data_handler.listen([ticker], "T")
-
+    def set_market_close(self):
+        self.market_open = False
 
     '''
-        Overview: spins up Trades on  
+        Overview:  Start SH on own process via multiprocessing
 
         Requires: none
         Modifies: none
@@ -107,9 +105,26 @@ class BrokerBot:
         Returns: none
         Throws: RuntimeError on execution
 
-        TODO: Specfification
+        TODO: Specfification & figure out strategy logic/pipeline
     '''
-    def Run():
-        raise RuntimeError('Failed to open database') from exc
+    def run(self):
+        # strategies = ["ST1", "ST2", "ST3"]
+        strategies = ["ST1"]
+        sh_instances = []
+        sh_processes = []
+        for strat in strategies:
+            sh_instances.append(StrategyHandler(
+                self.api_key, self.secret_key, self.base_url, self.socket, strat))
 
+        for sh in sh_instances:
+            sh_processes.append(Process(target=sh.run, args=()))
+        
+        for proc in sh_processes:
+            proc.start()
 
+        while True:
+            if not self.market_open:
+                for proc in sh_processes:
+                    proc.join()
+            else:
+                time.sleep(60)
