@@ -45,10 +45,11 @@ class BrokerBot:
     # Start SH on own process via multiprocessing
     # TODO: figure out strategy logic/pipeline
     def run(self):
-        stragies = ["ST1", "ST2", "ST3"]
+        # strategies = ["ST1", "ST2", "ST3"]
+        strategies = ["ST1"]
         sh_instances = []
         sh_processes = []
-        for strat in stragies:
+        for strat in strategies:
             sh_instances.append(StrategyHandler(
                 self.api_key, self.secret_key, self.base_url, self.socket, strat))
 

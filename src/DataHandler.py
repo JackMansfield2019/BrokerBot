@@ -126,6 +126,10 @@ class AlpacaDataHandler(DataHandler):
         self.ws = None
         self.socket = socket
         self.pending_tickers = []
+        self.sh_pipe_conn = None
+
+    def set_pipe_conn(self, conn):
+        self.sh_pipe_conn = conn
 
     def get_account(self):
         return self.api_account
@@ -169,8 +173,9 @@ class AlpacaDataHandler(DataHandler):
         ws.send(json.dumps(listen_message))
 
     def on_message(self, ws, message):
-        print("received a message")
-        print(message)
+        # print("received a message")
+        # print(message)
+        self.sh_pipe_conn.send(message)
 
     def on_close(self, ws):
         print("closed connection")

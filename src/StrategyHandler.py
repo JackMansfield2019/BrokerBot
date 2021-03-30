@@ -12,6 +12,9 @@ class StrategyHandler:
         self.ExecutionHandler = AlpacaExecutionHandler(
             api_key, secret_key, base_url)
 
+        self.dh_conn = None
+        self.eh_conn = None
+
     """
     Overview: High-Risk Strategy will be implemented here. Below is just an example to give an idea. 
 
@@ -74,9 +77,29 @@ class StrategyHandler:
     def Mean_Reversion():
         pass
 
+    def test_recv_dh(self):
+        while True:
+            data = self.dh_conn.recv()
+            print(f"SH RECV: {data}")
+
+    def set_pipe_conns(self, dh_conn, eh_conn):
+        self.dh_conn = dh_conn
+        self.eh_conn = eh_conn
+
     # Create DH + EH process and pipe connection points for both
     # TODO: figure out best way to pass these pipe connections points to DH and EH
     # TODO: add logic in SH and EH for using pipe to communication with SH
+
     def run(self):
         sh_dh_conn, dh_sh_conn = Pipe()
         sh_eh_conn, eh_sh_conn = Pipe()
+
+        self.set_pipe_conns(sh_dh_conn, sh_eh_conn)
+        # Set pipe conn in DH
+        self.DataHandler.set_pipe_conn(dh_sh_conn)
+
+        dh_listen_proc = Process(
+            target=self.DataHandler.start_streaming, args=("TSLA",))
+
+        dh_listen_proc.start()
+        self.test_recv_dh()
