@@ -140,11 +140,22 @@ class AlpacaDataHandler(DataHandler):
     def get_socket(self):
         return self.ws
 
-    def get_bars(self, ticker, start_time, end_time, bar_timeframe):
-        url = self.base_url + '/v2/stocks'+'/'+'?symbol='+ticker+'/bars' + \
-            '&start='+start_time+'&end='+end_time+'&timeframe='+bar_timeframe
+
+    """
+    requires: Strings for the ticker, start and end time in RFC-3339 format(e.g. 2021-03-11T00:00:00-05:00), 
+              timeframe (currently only '1Day', '1Hour', and '1Min'), 
+              and bar_limit, which limits the number of bars returned within that timeframe.
+    modifies: nothing.
+    effects:  nothing.
+    returns:  A Pandas Dataframe containing the bars data. 
+    """
+    def get_bars(self, ticker: str, start_time: str, end_time: str, bar_timeframe: str, bar_limit: str):
+        url ='https://data.alpaca.markets/v2/stocks'+'/'+ticker+'/bars?adjustment=raw'+'&start='+start_time+'&end='+end_time+'&limit='+bar_limit+'&page_token='+'&timeframe='+bar_timeframe
         r = requests.get(url, headers=self.headers)
-        df = pd.read_json(r.json())
+        df = pd.read_json(json.dumps(r.json()['bars']))
+        df['oi'] = -1
+        df.columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Open Interest']
+        print(df)
         return df
 
     # Socket Functions
