@@ -16,6 +16,8 @@ overview: (description of the class)
 
 TODO: (to do of the class as a whole more long term things)
 """
+
+
 class BrokerBot:
 
     """
@@ -26,7 +28,7 @@ class BrokerBot:
     Simple explanation:(if nesscary)
     """
 
-#====================Creators====================
+# ====================Creators====================
     '''
         Overview: constructs a BrokerBot instance. 
 
@@ -49,7 +51,8 @@ class BrokerBot:
         TODO: How many tickers are we limited to per API request? Answer: 200 
         sockets limited to 30 
     '''
-    def __init__(self, api_key, secret_key, base_url, socket):
+
+    def __init__(self, api_key, secret_key, base_url, socket, search_conn):
         if api_key is None or secret_key is None or base_url is None or socket is None:
             raise RuntimeError('BrokerBot initalized with a null') from exc
 
@@ -66,8 +69,10 @@ class BrokerBot:
 
         self.account_url = "{}/v2/account".format(self.base_url)
         self.order_url = "{}/v2/orders".format(self.base_url)
-        self.strategy_handler_processes = []
-#====================Observers====================
+        self.searcher_conn = search_conn
+        self.sh_instances = []
+        self.sh_processes = []
+# ====================Observers====================
     '''
         Overview: returns the account
 
@@ -78,11 +83,12 @@ class BrokerBot:
         Throws: ???
         TODO: figure out what this Might throw
     '''
+
     def get_account(self):
         r = requests.get(self.account_url, headers)
         return json.loads(r.content)
-#====================Producers====================
-#====================Mutators====================
+# ====================Producers====================
+# ====================Mutators====================
     '''
         Overview: sets market_open to false
 
@@ -93,8 +99,15 @@ class BrokerBot:
         Throws: none
         TODO:
     '''
+
     def set_market_close(self):
         self.market_open = False
+
+    def listen_for_searcher(self):
+        while True:
+            volatile_stocks = self.searcher_conn.recv()
+            for sh in self.sh_instances:
+                sh.update_listening()
 
     '''
         Overview:  Start SH on own process via multiprocessing
@@ -107,18 +120,18 @@ class BrokerBot:
 
         TODO: Specfification & figure out strategy logic/pipeline
     '''
+
     def run(self):
         # strategies = ["ST1", "ST2", "ST3"]
         strategies = ["ST1"]
-        sh_instances = []
-        sh_processes = []
+
         for strat in strategies:
-            sh_instances.append(StrategyHandler(
+            self.sh_instances.append(StrategyHandler(
                 self.api_key, self.secret_key, self.base_url, self.socket, strat))
 
         for sh in sh_instances:
-            sh_processes.append(Process(target=sh.run, args=()))
-        
+            self.sh_processes.append(Process(target=sh.run, args=()))
+
         for proc in sh_processes:
             proc.start()
 
