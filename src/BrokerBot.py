@@ -49,6 +49,7 @@ class BrokerBot:
         TODO: How many tickers are we limited to per API request? Answer: 200 
         sockets limited to 30 
     '''
+    # testing branch switch
     def __init__(self, api_key, secret_key, base_url, socket):
         if api_key is None or secret_key is None or base_url is None or socket is None:
             raise RuntimeError('BrokerBot initalized with a null') from exc
