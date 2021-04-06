@@ -5,8 +5,7 @@ from abc import ABC, abstractmethod  # Abstract class module for python.
 import alpaca_trade_api as tradeapi
 from dataclasses import dataclass  # Python structs module.
 import pandas as pd  # For data storage and analysis.
-import ast
-
+import ast, datetime # For on_message data handling
 """
 overview:
     - DataHandler Class: DataHandler is a class that takes in data from a given brokerage API,
@@ -194,14 +193,18 @@ class AlpacaDataHandler(DataHandler):
         print(message)
         # convert message to dictionary
         message = ast.literal_eval(message)
-        # message is not an authorization or listening message, so it must be a tick message
+        # message is not an authorization or listening message, so it must be a minute bars message
         if message["stream"] != "authorization" and message["stream"] != "listening":
-            df = pd.DataFrame.from_dict(message)
-            df = df.drop(columns=["stream"])
-            # send DF to SH?
-            # trim rows/reconfigure DF before sending?
+            timestamp = datetime.datetime.fromtimestamp(message["data"]["e"] / 1000)
+            timestamp = timestamp.isoformat("T")
+            op = message["data"]["o"]
+            high = message["data"]["h"]
+            low = message["data"]["l"]
+            cl = message["data"]["c"]
+            vol = message["data"]["v"]
+            data = [[timestamp, op, high, low, cl, vol]]
+            df = pd.DataFrame(data, columns=["Time", "Open", "High", "Low", "Close", "Volume"])
             self.sh_pipe_conn.send(df)
-
     def on_close(self, ws):
         print("closed connection")
 
