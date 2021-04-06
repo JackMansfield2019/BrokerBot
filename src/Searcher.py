@@ -1,33 +1,34 @@
-import config
-import websocket, json
-import numpy as np 
+import websocket
+import json
+import numpy as np
 import pandas as pd
 import requests
 import math
-import alpaca_trade_api as tradeapi 
-import time # used for calculating time 
-from statistics import mean # used to calculate avg volume 
+import alpaca_trade_api as tradeapi
+import time  # used for calculating time
+from statistics import mean  # used to calculate avg volume
+
 
 class Searcher:
-  def __init__(self,API_key_id,API_secret_key,base_url,socket = "wss://data.alpaca.markets/stream"):
-  	
-  	self.headers = {"APCA-API-KEY-ID":API_key_id, "APCA-API-SECRET-KEY":API_secret_key}
+  def __init__(self, API_key_id, API_secret_key, base_url, socket, bb_conn):
+    self.headers = {"APCA-API-KEY-ID": API_key_id,"APCA-API-SECRET-KEY": API_secret_key}
     self.base_url = base_url
     self.account_url= "{}/v2/account".format(self.base_url)
     self.order_url = "{}/v2/orders".format(self.base_url)
+    self.bb_conn = bb_conn
     self.api = tradeapi.REST(
-                          headers[APCA-API-KEY-ID],
-                          headers[APCA-API-SECRET-KEY],
+                          self.headers["APCA-API-KEY-ID"],
+                          self.headers["APCA-API-SECRET-KEY"],
                           base_url
           )
-    self.api_account = api.get_account()
+    # self.api_account = api.get_account()
     self.socket = socket
     self.stocks = pd.read_csv('S&P500-Symbols.csv')
     Columns = ['Ticker', 'Time', 'Volume']
     self.dataframe = pd.DataFrame(columns = Columns) 
     self.stock_data = dataframe.set_index("Ticker", drop = False) 
 
-    #sets the time for each stock to the time we first initialize the searcher. 
+    # sets the time for each stock to the time we first initialize the searcher. 
     for stock in self.stocks:
       t = int(time.time())
       self.stock_data = self.stock_data.append( pd.Series([ stock, t], index = cols ), ignore_index = True) 
@@ -54,7 +55,7 @@ class Searcher:
         stock_data.at[stock, 'Time'] = time_final # updates the stock's time cell 
         stock_data.at[stock, 'Volume'] = average_volume # updates the stock's volume cell 
 
-        #looking at top 5 stocks
+        # looking at top 5 stocks
         best = [] 
 
         # Puts the top 5 changes in volume into best loop 
@@ -102,9 +103,9 @@ class Searcher:
     bars = time_elapsed/300 
 
     barset = api.get_barset(stock, '5Min', limit=bars)
-    #stock_bar = barset[stock]
+    # stock_bar = barset[stock]
     
-    #assuming the previous bar from current is in the last index of barset 
+    # assuming the previous bar from current is in the last index of barset 
     last = len(barset) - 1 
     stock_time = barset[last][0]
 

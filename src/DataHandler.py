@@ -181,13 +181,14 @@ class AlpacaDataHandler(DataHandler):
         }
         # check pending tickers, sne initial listen message, wait for new tickers,
         ws.send(json.dumps(listen_message))
-        
+
     """
     requires: Reference to the WebSocketApp and the message that was receieved.
     modifies: nothing.
     effects:  Sends a DataFrame to SH via the pipe.
     returns:  nothing.
     """
+
     def on_message(self, ws, message):
         print("received a message")
         print(message)
@@ -211,9 +212,9 @@ class AlpacaDataHandler(DataHandler):
     def on_error(self, ws, error):
         print(error)
 
-    def start_streaming(self, ticker):
+    def start_streaming(self, tickers):
 
-        self.pending_tickers.append(ticker)
+        self.pending_tickers += tickers
         print(self.socket)
         self.ws = websocket.WebSocketApp(
             self.socket,

@@ -1,4 +1,6 @@
 from BrokerBot import BrokerBot
+from Searcher import Searcher
+from multiprocessing import Process, Pipe
 # import Searcher
 import datetime
 import pytz  # pip
@@ -21,6 +23,7 @@ class MainControl:
         self.base_url = ""
         self.socket = ""
         self.broker_bots = []
+        self.searchers = []
 
         try:
             self.api_key = os.environ['API_KEY']
@@ -34,10 +37,16 @@ class MainControl:
             self.base_url = os.getenv('BASE_URL')
             self.socket = os.getenv('SOCKET')
 
+        bb_conn, search_conn = Pipe()
         self.broker_bots.append(BrokerBot(
-            self.api_key, self.secret_key, self.base_url, self.socket))
+            self.api_key, self.secret_key, self.base_url, self.socket, bb_conn))
+
+        self.searchers.append(Searcher(
+            self.api_key, self.secret_key, self.base_url, self.socket, search_conn))
 
     def run(self):
+        bb_proc = Process(target=self.broker_bots[0].run, args=())
+        search_proc = Process(target=self.searchers[0].run, args=())
         # TODO: Implement timing algo fully
         while True:
             if market_closed and not DEBUG:
@@ -46,8 +55,10 @@ class MainControl:
                 continue
 
             else:
-                for bot in self.broker_bots:
-                    bot.run()
+                # eventually make this loop starting bb and searchers for multiple users
+
+                bb_proc.start()
+                search_proc.start()
 
     # def test_data_ingest(self):
     #     # Goal : spin up several broker bots on different threads with same API key -> same socket
