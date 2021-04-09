@@ -149,3 +149,66 @@ class PortfolioManager:
         self.stop_loss = int(input)
         name = Stop_loss(self.stop_loss)
         print("Selected Stop Loss: {}".format(name))
+    
+    
+    # Overview: Function that prints the user's
+    #           portfolio data
+    #
+    # Params: self (PortfolioManager Object)
+    # Requires: PortfolioManager object has values for current
+    #           strategies, inputted risk level, total return,
+    #           today's return, etc.
+    # Modifies: None
+    # Effects: None
+    # Returns: None, prints instead
+    def print_user_portfolio(self):
+        pass
+        
+    # Overview: Function that returns the user's total all time return
+    #
+    # Params: self (PortfolioManager Object)
+    # Requires: None
+    # Modifies: None
+    # Effects: None
+    # Returns: Returns the total all time return of the user's account
+    def get_total_return(self):
+        pass
+        
+    # Overview: Function that returns the user's return for the current day
+    #
+    # Params: self (PortfolioManager Object)
+    # Requires: None
+    # Modifies: None
+    # Effects: None
+    # Returns: Returns the return of the current day for this user's account
+    def get_todays_return(self):
+        pass
+        
+    # Overview: Function that returns current running strategy/strategies
+    #
+    # Params: self (PortfolioManager Object)
+    # Requires: None
+    # Modifies: None
+    # Effects: None
+    # Returns: Returns a list of length 0...n depending on the number of
+    #          strategies the user is currently using. This list contains
+    #          the current strategies.
+    def get_strat(self):
+        pass
+    
+    
+    # Overview: Function that computes a portfolio diversity score based
+    #           on the current holdings the user has.
+    #
+    # Params: self (PortfolioManager Object)
+    # Requires: The user has at least one holding
+    # Modifies: None
+    # Effects: None
+    # Returns: Returns a number between 0 and 100, 0 meaning the user only
+    #          has one stock and 100 meaning the user's portfolio is very
+    #          diverse. The score is computed based on strategies being
+    #          used the number and diversity of tickers being traded.
+    def get_diversity_score:
+        pass
+    
+    
