@@ -1,56 +1,12 @@
 #Imports
-from StrategyHandler import StrategyHandler
-from DataHandler import AlpacaDataHandler
+# from StrategyHandler import StrategyHandler
+# from DataHandler import AlpacaDataHandler
 from threading import Thread
 from queue import PriorityQueue
-from enum import Enum
-import ENUMS
+from ENUMS import *
 import time
 import config
 import sys
-
-"""
-class Strategies(Enum):
-    SHORT = 1
-    MEDIUM = 2
-    LONG = 3
-
-
-class Risk(Enum):
-    SHORT_LOW_RISK = 1
-    MEDIUM_LOW_RISK = 2
-    LONG_LOW_RISK = 3
-
-    SHORT_MEDIUM_RISK = 4
-    MEDIUM_MEDIUM_RISK = 5
-    LONG_MEDIUM_RISK = 6
-
-    SHORT_HIGH_RISK = 7
-    MEDIUM_HIGH_RISK = 8
-    LONG_HIGH_RISK = 9
-
-
-class DH_API(Enum):
-    ALPACA = 1
-
-    # BINANCE = 2
-    # POLYGON = 3
-    # IBKR = 4
-    # ALPHA = 5
-
-
-class EH_API(Enum):
-    ALPACA = 1
-
-    # BINANCE = 2
-    # IBKR = 3
-    # ALPHA = 4
-
-
-class Stop_loss(Enum):
-    RSI = 1
-    STATIC = 2
-"""
 
 class PortfolioManager:
 
@@ -61,94 +17,114 @@ class PortfolioManager:
     #        Be able to interface with other classes
 
     # ====================Creators====================
-    def __init__(self):
-        # All values defaulted to 0
-        self.strategy = 0
-        self.risk = 0
-        self.DH_api = 0
-        self.EH_api = 0
-        self.stop_loss = 0
-    # ====================Observers====================
+    def __init__(self, api_key, secret_key, base_url, socket):
+        self.api_key = api_key
+        self.secret_key = secret_key
+        self.base_url = base_url
+        self.socket = socket
 
-    # Overview: Main function where basic I/O occurs
+        self.headers = {}
+        self.account_url = ""
+        self.order_url = "" 
+        self.input = []
+
+        # inputs in the form [strategy, risk, DH_api, EH_api, stop_loss]
+        self.initial_setup()
+        
+    # ====================Observers====================
+    # Overview: Function to return self.input values
     #
-    # Modifies: self.api, self.strategy, self.stop_loss, self.risk
-    # Effects: Changes values of variables based on user input
-    # Returns: Basic Output based on input
-    def main(self):
-        args = len(sys.argv) - 1
-        if(args != 5):
-            print("Correct Usage: python-file strategy risk DH_api EH_api" +
-                  " stop_loss")
-        else:
-            self.set_strat(sys.argv[1])
-            self.set_risk(sys.argv[2])
-            self.set_DH_api(sys.argv[3])
-            self.set_EH_api(sys.argv[4])
-            self.set_stop_loss(sys.argv[5])
+    # Requires: none
+    # Modifies: none
+    # Effects: none
+    # Returns: self.input
+    # Throws: none
+    def get_input(self):
+        return self.input
 
     # ====================Producers====================
     # ====================Mutators====================
 
-    # Overview: Function that sets the strategy based on user input
+    # Overview: Sets the initial values of input
     #
-    # Params: input is the user inputted strategy
-    # Requires: strategy is an int 1 to 3
-    # Modifies: self.strategy
-    # Effects: self.strategy = stratinput
-    # Returns: Basic Output based on input
-    def set_strat(self, input):
-        self.strategy = int(input)
-        name = Strategies(self.strategy)
+    # Requires: none
+    # Modifies: self.input
+    # Effects: val of self.input changes based on user input
+    # Returns: none
+    # Throws: none
+    # TODO: Add functionality for other api's
+
+    def initial_setup(self):
+        print("Enter the specified Strategy: (1-9)")
+        strat = int(input())
+        name = Strategies(strat).name
         print("Selected Strategy: {}".format(name))
-
-    # Overview: Function that sets the risk based on user input
-    #
-    # Params: input is the user inputted risk
-    # Requires: risk is an int 1 to 9
-    # Modifies: self.risk
-    # Effects: self.risk = rinput
-    # Returns: Basic Output based on input
-    def set_risk(self, input):
-        self.risk = int(input)
-        name = Risk(self.risk)
+        print("Enter the specified Risk: (1-9)")
+        risk = int(input())
+        name = Risk(risk).name
         print("Selected Risk: {}".format(name))
-
-    # Overview: Function that sets the DH api
-    #
-    # Params: input is the user inputted api
-    # Requires: api is an int 1 to 5
-    # Modifies: self.DH_api
-    # Effects: self.DH_api = input
-    # Returns: Basic Output based on input
-    def set_DH_api(self, input):
-        self.DH_api = int(input)
-        name = DH_API(self.DH_api)
-        print("Selected DH API: {}".format(name))
-
-    # Overview: Function that sets the EH api
-    #
-    # Params: input is the user inputted api
-    # Requires: api is an int 1 to 4
-    # Modifies: self.EH_api
-    # Effects: self.EH_api = input
-    # Returns: Basic Output based on input
-    def set_EH_api(self, input):
-        self.EH_api = int(input)
-        name = EH_API(self.EH_api)
-        print("Selected EH API: {}".format(name))
-
-    # Overview: Function that sets the Stop loss
-    #
-    # Params: input is the user inputted stop loss
-    # Requires: api is an int 1 to 2
-    # Modifies: self.stop_loss
-    # Effects: self.stop_loss = input
-    # Returns: Basic Output based on input
-    def set_stop_loss(self, input):
-        self.stop_loss = int(input)
-        name = Stop_loss(self.stop_loss)
+        print("Enter the specified DH_API: (1-5)")
+        dh_api = int(input())
+        name = DH_API(dh_api).name
+        print("Selected DH_API: {}".format(name))
+        print("Enter the specified EH_API: (1-4)")
+        eh_api = int(input())
+        name = EH_API(eh_api).name
+        print("Selected EH_API: {}".format(name))
+        print("Enter the specified Stop Loss: (1-2)")
+        stop_loss = int(input())
+        name = Stop_loss(stop_loss).name
         print("Selected Stop Loss: {}".format(name))
+        self.input = [strat, risk, dh_api, eh_api, stop_loss]
+        if(self.input[3] == '1'):
+            self.set_alpaca()
+
+    # Overview: Sets Alpaca API values if alpaca api is selected for EH
+    #
+    # Requires: none
+    # Modifies: self.headers, self.account_url, self.order_url
+    # Effects: self.headers takes the api key/secret key and formats to alpaca format
+    #          self.account_url takes base url and formats to alpaca format
+    #          self.order_url takes base url and formats to alpaca format
+    # Returns: none
+    # Throws: none
+    def set_alpaca(self):
+        self.headers = {
+            "APCA-API-KEY-ID": api_key,
+            "APCA-API-SECRET-KEY": secret_key
+        }
+        self.account_url = "{}/v2/account".format(self.base_url)
+        self.order_url = "{}/v2/orders".format(self.base_url)
+
+    # Overview: Changes the strategy based on user input
+    #
+    # Requires: none
+    # Modifies: self.input[0]
+    # Effects: self.input[0] changes based on user input
+    # Returns: none
+    # Throws: none
+    # TODO: Add functionality to stop one strategy and start new one
+    def change_strat(self):
+        print("Enter new Strategy to use: (1-9)")
+        strat = int(input())
+        name = Strategies(strat).name
+        print("Selected Strategy: {}".format(name))
+        self.input[0] = strat
+
+    # Overview: Changes the risk based on user input
+    #
+    # Requires: none
+    # Modifies: self.input[1]
+    # Effects: self.input[1] changes based on user input
+    # Returns: none
+    # Throws: none
+    # TODO: Add functionality to change risk value used
+    def change_risk(self):
+        print("Enter new Risk to use: (1-9)")
+        risk = int(input())
+        name = Risk(risk).name
+        print("Selected Risk: {}".format(name))
+        self.input[1] = risk
     
     
     # Overview: Function that prints the user's
@@ -208,7 +184,7 @@ class PortfolioManager:
     #          has one stock and 100 meaning the user's portfolio is very
     #          diverse. The score is computed based on strategies being
     #          used the number and diversity of tickers being traded.
-    def get_diversity_score:
+    def get_diversity_score(self):
         pass
     
     

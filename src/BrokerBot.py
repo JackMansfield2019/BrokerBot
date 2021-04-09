@@ -1,12 +1,12 @@
 # import DataHandler
 # import ExecutionHandler
-# import PortfolioManager
-from StrategyHandler import StrategyHandler
-from DataHandler import AlpacaDataHandler
+from PortfolioManager import *
+# from StrategyHandler import StrategyHandler
+# from DataHandler import AlpacaDataHandler
 from threading import Thread
 from queue import PriorityQueue
 from enum import Enum
-import ENUMS
+from ENUMS import *
 import time
 from multiprocessing import Process
 import os
@@ -53,21 +53,24 @@ class BrokerBot:
     def __init__(self, api_key, secret_key, base_url, socket):
         if api_key is None or secret_key is None or base_url is None or socket is None:
             raise RuntimeError('BrokerBot initalized with a null') from exc
-
-        self.headers = {
-            "APCA-API-KEY-ID": api_key,
-            "APCA-API-SECRET-KEY": secret_key
-        }
-
+        
         self.market_open = True
         self.api_key = api_key
         self.secret_key = secret_key
         self.base_url = base_url
         self.socket = socket
 
-        self.account_url = "{}/v2/account".format(self.base_url)
-        self.order_url = "{}/v2/orders".format(self.base_url)
+        self.headers = {}
+        self.account_url = ""
+        self.order_url = "" 
+
+        self.pm = PortfolioManager(api_key, secret_key, base_url, socket)
+        self.input = self.pm.input
+        self.set_vars()
+
         self.strategy_handler_processes = []
+
+        self.pm_loop()
 #====================Observers====================
     '''
         Overview: returns the account
@@ -82,6 +85,20 @@ class BrokerBot:
     def get_account(self):
         r = requests.get(self.account_url, headers)
         return json.loads(r.content)
+    '''
+        Overview: Updates handlers based on portfoliomanager values
+
+        Requires: none
+        Modifies: none
+        Effects: none
+        Returns: none
+        Throws: none
+        TODO: Add checking for if strategy or risk change and update handlers accordingly
+    '''
+    def update(self):
+        if(self.pm.val != self.val):
+            self.val = self.pm.val
+            pass
 #====================Producers====================
 #====================Mutators====================
     '''
@@ -96,6 +113,50 @@ class BrokerBot:
     '''
     def set_market_close(self):
         self.market_open = False
+    '''
+        Overview: sets variables based on portfolio manager inputs
+
+        Requires: none
+        Modifies: self.headers, self.account_url, self.order_url
+        Effects: All three values updated based on PortfolioManager values of them
+        Returns: none
+        Throws: none
+        TODO: 
+    '''
+    def set_vars(self):
+        self.headers = self.pm.headers
+        self.account_url = self.pm.account_url
+        self.order_url = self.pm.order_url
+    '''
+        Overview: infinite loop to update portfoliomanager values
+
+        Requires: none
+        Modifies: self.headers, self.account_url, self.order_url
+        Effects: All three values updated based on PortfolioManager values of them
+        Returns: none
+        Throws: none
+        TODO: 
+    '''
+    def pm_loop(self):
+        commands = {
+            "changestrat": self.pm.change_strat,
+            "changerisk": self.pm.change_risk,
+            "getstrat": self.pm.get_strat,
+            "printportfolio": self.pm.print_user_portfolio,
+            "totalreturn": self.pm.get_total_return,
+            "todaysreturn": self.pm.get_todays_return
+        }
+        listcommands = list(commands.keys())
+        while(True):
+            user = input()
+            if(user == 'q'):
+                break
+            if(user in listcommands):
+                commands.get(user)()
+                pass
+            else:
+                print("Invalid Input")
+            self.update()
 
     '''
         Overview:  Start SH on own process via multiprocessing
