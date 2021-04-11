@@ -16,6 +16,8 @@ overview: (description of the class)
 
 TODO: (to do of the class as a whole more long term things)
 """
+
+
 class BrokerBot:
 
     """
@@ -26,34 +28,34 @@ class BrokerBot:
     Simple explanation:(if nesscary)
     """
 
-#====================Creators====================
+# ====================Creators====================
     '''
-        Overview: constructs a BrokerBot instance. 
+    Overview: constructs a BrokerBot instance.
 
-        Requires: api_key: the api key for the api this instance uses.
-                  secret_key: the sectet key for the api this instance constructs.
-                  base_url: the base url of the api.
-                  socket: the socket url for communication with the api
-        Modifies: headers,market_open,api_key,secret_key,base_url,socket,account_url
-                  order_url,strategy_handler_processes.
-        Effects: headers is inilized and contains api_key, and secret_key
-                 market_open = true
-                 api_key stores the api key
-                 base_url stores the api's base url
-                 socket contian the api's socket port.
-                 account url stores a formatted url for the account(alpaca only)
-                 order url stores a formatted url for the orders(alpaca only)
-                 strategy_handler_processes is inilized to an empty list
-        Returns: volume of the stock that was passed in 
-        Throws: RunTimeException if any parameter is null.
-        TODO: How many tickers are we limited to per API request? Answer: 200 
-        sockets limited to 30 
+    Requires: api_key: the api key for the api this instance uses.
+                secret_key: the sectet key for the api this instance constructs
+                base_url: the base url of the api.
+                socket: the socket url for communication with the api
+    Modifies: headers,market_open,api_key,secret_key,base_url,socket,
+              account_url,order_url,strategy_handler_processes.
+    Effects: headers is inilized and contains api_key, and secret_key
+                market_open = true
+                api_key stores the api key
+                base_url stores the api's base url
+                socket contian the api's socket port.
+                account url stores a formatted url for the account(alpaca only)
+                order url stores a formatted url for the orders(alpaca only)
+                strategy_handler_processes is inilized to an empty list
+    Returns: volume of the stock that was passed in
+    Throws: RunTimeException if any parameter is null.
+    TODO: How many tickers are we limited to per API request? Answer: 200
+    sockets limited to 30
     '''
     # testing branch switch
     def __init__(self, api_key, secret_key, base_url, socket):
         if api_key is None or secret_key is None or base_url is None or socket is None:
             raise RuntimeError('BrokerBot initalized with a null') from exc
-        
+
         self.market_open = True
         self.api_key = api_key
         self.secret_key = secret_key
@@ -62,7 +64,7 @@ class BrokerBot:
 
         self.headers = {}
         self.account_url = ""
-        self.order_url = "" 
+        self.order_url = ""
 
         self.pm = PortfolioManager(api_key, secret_key, base_url, socket)
         self.input = self.pm.input
@@ -71,7 +73,7 @@ class BrokerBot:
         self.strategy_handler_processes = []
 
         self.pm_loop()
-#====================Observers====================
+# ====================Observers====================
     '''
         Overview: returns the account
 
@@ -93,14 +95,15 @@ class BrokerBot:
         Effects: none
         Returns: none
         Throws: none
-        TODO: Add checking for if strategy or risk change and update handlers accordingly
+        TODO: Add checking for if strategy or risk change and update
+              handlers accordingly
     '''
     def update(self):
-        if(self.pm.val != self.val):
-            self.val = self.pm.val
-            pass
-#====================Producers====================
-#====================Mutators====================
+        if(self.pm.input != self.input):
+            self.input = self.pm.input
+        pass
+# ====================Producers====================
+# ====================Mutators====================
     '''
         Overview: sets market_open to false
 
@@ -118,10 +121,11 @@ class BrokerBot:
 
         Requires: none
         Modifies: self.headers, self.account_url, self.order_url
-        Effects: All three values updated based on PortfolioManager values of them
+        Effects: All three values updated based on PortfolioManager
+                 values of them
         Returns: none
         Throws: none
-        TODO: 
+        TODO:
     '''
     def set_vars(self):
         self.headers = self.pm.headers
@@ -131,11 +135,11 @@ class BrokerBot:
         Overview: infinite loop to update portfoliomanager values
 
         Requires: none
-        Modifies: self.headers, self.account_url, self.order_url
-        Effects: All three values updated based on PortfolioManager values of them
+        Modifies: self.input
+        Effects: self.input updates based on user input
         Returns: none
         Throws: none
-        TODO: 
+        TODO:
     '''
     def pm_loop(self):
         commands = {
