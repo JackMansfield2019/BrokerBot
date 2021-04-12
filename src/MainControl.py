@@ -41,24 +41,29 @@ class MainControl:
         self.broker_bots.append(BrokerBot(
             self.api_key, self.secret_key, self.base_url, self.socket, bb_conn))
 
-        self.searchers.append(Searcher(
-            self.api_key, self.secret_key, self.base_url, self.socket, search_conn))
+        # self.searchers.append(Searcher(
+        #     self.api_key, self.secret_key, self.base_url, self.socket, search_conn))
 
     def run(self):
         bb_proc = Process(target=self.broker_bots[0].run, args=())
-        search_proc = Process(target=self.searchers[0].run, args=())
+        # search_proc = Process(target=self.searchers[0].run, args=())
         # TODO: Implement timing algo fully
+        while market_closed and not DEBUG:
+            print("MARKET CLOSED : SLEEPING FOR 1 MIN")
+            time.sleep(60)
+            continue
+
+            
+        # eventually make this loop starting bb and searchers for multiple users
+
+        bb_proc.start()
         while True:
             if market_closed and not DEBUG:
-                print("MARKET CLOSED : SLEEPING FOR 1 MIN")
+                bb_proc.join()
+            else:
                 time.sleep(60)
                 continue
-
-            else:
-                # eventually make this loop starting bb and searchers for multiple users
-
-                bb_proc.start()
-                search_proc.start()
+        # search_proc.start()
 
     # def test_data_ingest(self):
     #     # Goal : spin up several broker bots on different threads with same API key -> same socket

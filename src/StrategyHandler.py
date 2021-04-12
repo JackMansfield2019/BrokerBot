@@ -1,6 +1,8 @@
 from DataHandler import AlpacaDataHandler
 from ExecutionHandler import AlpacaExecutionHandler
-import threading
+from threading import Thread
+import queue
+import copy
 from multiprocessing import Process, Pipe
 
 
@@ -33,14 +35,15 @@ class StrategyHandler:
     Returns: none
     """
 
-    def __init__(self, api_key, secret_key, base_url, socket, strategy):
+    def __init__(self, api_key, secret_key, base_url, socket, strategy, bb_conn):
         self.strategy = strategy
         self.DataHandler = AlpacaDataHandler(
             api_key, secret_key, base_url, socket)
         self.ExecutionHandler = AlpacaExecutionHandler(
             api_key, secret_key, base_url)
 
-        self.dh_conn = None
+        self.bb_conn = bb_conn
+        self.dh_queue = None
         self.eh_conn = None
         self.target_stocks = []
     # ====================Observers====================
@@ -54,10 +57,10 @@ class StrategyHandler:
     Throws: none
     """
 
-    def test_recv_dh(self):
+    def test_dh_queue(self):
         while True:
-            data = self.dh_conn.recv()
-            print(f"SH RECV: {data}")
+            data_frame = self.dh_queue.get()
+            print(f"SH RECV: {data_frame}")
     # ====================Producers====================
     # ====================Mutators====================
 
@@ -159,11 +162,13 @@ class StrategyHandler:
     Throws: RunTimeError if any of the parameters are null
     """
 
-    def set_pipe_conns(self, dh_conn, eh_conn):
-        if dh_conn is None or eh_conn is None:
-            raise RuntimeError('set_pipe_conns called with a null') from exc
-        self.dh_conn = dh_conn
+    def set_eh_dh_conns(self, dh_q, eh_conn):
+        if dh_q is None or eh_conn is None:
+            raise RuntimeError('set_eh_dh_conns called with a null') from exc
+        self.dh_queue = dh_q
         self.eh_conn = eh_conn
+
+
     """
     Overview: Create DH + EH process and pipe connection points for both
 
@@ -177,21 +182,31 @@ class StrategyHandler:
     """
 
     def run(self):
-        sh_dh_conn, dh_sh_conn = Pipe()
+        sh_dh_queue = queue.LifoQueue()
         sh_eh_conn, eh_sh_conn = Pipe()
 
-        self.set_pipe_conns(sh_dh_conn, sh_eh_conn)
-        # Set pipe conn in DH
-        self.DataHandler.set_pipe_conn(dh_sh_conn)
+        self.set_eh_dh_conns(sh_dh_queue, sh_eh_conn)
+        # Set queue in DH
+        self.DataHandler.set_sh_queue(sh_dh_queue)
 
-        dh_listen_proc = Process(
-            target=self.DataHandler.start_streaming, args=([self.target_stocks]))
-        dh_listen_proc.start()
+        dh_stream_thread = Thread(
+            target=self.DataHandler.start_streaming, args=(["TSLA"],))
 
-        prev_target_stocks = copy.deep_copy(self.target_stocks)
+        dh_listen_thread = Thread(target=self.test_dh_queue, args=())
+
+        dh_stream_thread.start()
+        dh_listen_thread.start()
+
+
+
+        prev_target_stocks = copy.deepcopy(self.target_stocks)
+        # TODO: create logic for determining channel name based on strat
+        channel_name = "T"
         # TODO: refine this once searcher routine more explictily defined
-        # while True:
-        #     # if BB updates us with new target stocks from searcher, clean up DH process and start new one with updated target stocks
-        #     if prev_target_stocks is not self.target_stocks:
+        while True:
+            # if BB updates us with new target stocks from searcher, clean up DH process and start new one with updated target stocks
+            new_target_stocks = self.bb_conn.recv()
+            target_tickers = set(prev_target_stocks + new_target_stocks)
+            self.DataHandler.listen(target_tickers, channel_name)
 
-        self.test_recv_dh()
+        

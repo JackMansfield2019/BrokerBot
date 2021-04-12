@@ -5,7 +5,7 @@ from threading import Thread
 from queue import PriorityQueue
 from ENUMS import *
 import time
-import config
+
 import sys
 
 class PortfolioManager:

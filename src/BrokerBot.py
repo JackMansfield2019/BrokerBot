@@ -8,8 +8,9 @@ from queue import PriorityQueue
 from enum import Enum
 from ENUMS import *
 import time
-from multiprocessing import Process
+from multiprocessing import Process, Pipe
 import os
+from StrategyHandler import StrategyHandler
 
 """
 overview: (description of the class)
@@ -51,13 +52,8 @@ class BrokerBot:
     TODO: How many tickers are we limited to per API request? Answer: 200
     sockets limited to 30
     '''
-<<<<<<< HEAD
-    # testing branch switch
-    def __init__(self, api_key, secret_key, base_url, socket):
-=======
 
     def __init__(self, api_key, secret_key, base_url, socket, search_conn):
->>>>>>> Bug fixes on searcher. Started experimentating with implmenting IPC pipe for Searcher and BB communication.
         if api_key is None or secret_key is None or base_url is None or socket is None:
             raise RuntimeError('BrokerBot initalized with a null') from exc
 
@@ -67,25 +63,12 @@ class BrokerBot:
         self.base_url = base_url
         self.socket = socket
 
-<<<<<<< HEAD
-        self.headers = {}
-        self.account_url = ""
-        self.order_url = ""
-
-        self.pm = PortfolioManager(api_key, secret_key, base_url, socket)
-        self.input = self.pm.input
-        self.set_vars()
-
-        self.strategy_handler_processes = []
-
-        self.pm_loop()
-=======
         self.account_url = "{}/v2/account".format(self.base_url)
         self.order_url = "{}/v2/orders".format(self.base_url)
         self.searcher_conn = search_conn
+        self.sh_pipe_conns = []
         self.sh_instances = []
         self.sh_processes = []
->>>>>>> Bug fixes on searcher. Started experimentating with implmenting IPC pipe for Searcher and BB communication.
 # ====================Observers====================
     '''
         Overview: returns the account
@@ -101,24 +84,6 @@ class BrokerBot:
     def get_account(self):
         r = requests.get(self.account_url, headers)
         return json.loads(r.content)
-<<<<<<< HEAD
-    '''
-        Overview: Updates handlers based on portfoliomanager values
-
-        Requires: none
-        Modifies: none
-        Effects: none
-        Returns: none
-        Throws: none
-        TODO: Add checking for if strategy or risk change and update
-              handlers accordingly
-    '''
-    def update(self):
-        if(self.pm.input != self.input):
-            self.input = self.pm.input
-        pass
-=======
->>>>>>> Bug fixes on searcher. Started experimentating with implmenting IPC pipe for Searcher and BB communication.
 # ====================Producers====================
 # ====================Mutators====================
     '''
@@ -182,9 +147,9 @@ class BrokerBot:
 
     def listen_for_searcher(self):
         while True:
-            volatile_stocks = self.searcher_conn.recv()
-            for sh in self.sh_instances:
-                sh.update_listening()
+            target_stocks = self.searcher_conn.recv()
+            for sh_conn in self.sh_pipe_conns:
+                sh_conn.send(target_stocks)
 
     '''
         Overview:  Start SH on own process via multiprocessing
@@ -203,13 +168,15 @@ class BrokerBot:
         strategies = ["ST1"]
 
         for strat in strategies:
+            bb_sh_conn, sh_bb_conn = Pipe()
+            self.sh_pipe_conns.append(bb_sh_conn)
             self.sh_instances.append(StrategyHandler(
-                self.api_key, self.secret_key, self.base_url, self.socket, strat))
+                self.api_key, self.secret_key, self.base_url, self.socket, strat, sh_bb_conn))
 
-        for sh in sh_instances:
+        for sh in self.sh_instances:
             self.sh_processes.append(Process(target=sh.run, args=()))
 
-        for proc in sh_processes:
+        for proc in self.sh_processes:
             proc.start()
 
         while True:
