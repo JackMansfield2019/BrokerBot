@@ -151,6 +151,12 @@ class BrokerBot:
             for sh_conn in self.sh_pipe_conns:
                 sh_conn.send(target_stocks)
 
+    def listen_for_searcher(self):
+        while True:
+            volatile_stocks = self.searcher_conn.recv()
+            for sh in self.sh_instances:
+                sh.update_listening()
+
     '''
         Overview:  Start SH on own process via multiprocessing
 
