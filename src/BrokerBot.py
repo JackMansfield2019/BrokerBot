@@ -70,6 +70,21 @@ class BrokerBot:
         self.sh_instances = []
         self.sh_processes = []
 # ====================Observers====================
+
+    '''
+        Overview: Updates handlers based on portfoliomanager values
+        Requires: none
+        Modifies: none
+        Effects: none
+        Returns: none
+        Throws: none
+        TODO: Add checking for if strategy or risk change and update
+              handlers accordingly
+    '''
+    def update(self):
+        if(self.pm.input != self.input):
+            self.input = self.pm.input
+        pass
     '''
         Overview: returns the account
 
@@ -151,11 +166,6 @@ class BrokerBot:
             for sh_conn in self.sh_pipe_conns:
                 sh_conn.send(target_stocks)
 
-    def listen_for_searcher(self):
-        while True:
-            volatile_stocks = self.searcher_conn.recv()
-            for sh in self.sh_instances:
-                sh.update_listening()
 
     '''
         Overview:  Start SH on own process via multiprocessing
