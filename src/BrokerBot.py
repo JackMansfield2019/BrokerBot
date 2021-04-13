@@ -8,8 +8,9 @@ from queue import PriorityQueue
 from enum import Enum
 from ENUMS import *
 import time
-from multiprocessing import Process
+from multiprocessing import Process, Pipe
 import os
+from StrategyHandler import StrategyHandler
 
 """
 overview: (description of the class)
@@ -51,8 +52,8 @@ class BrokerBot:
     TODO: How many tickers are we limited to per API request? Answer: 200
     sockets limited to 30
     '''
-    # testing branch switch
-    def __init__(self, api_key, secret_key, base_url, socket):
+
+    def __init__(self, api_key, secret_key, base_url, socket, search_conn):
         if api_key is None or secret_key is None or base_url is None or socket is None:
             raise RuntimeError('BrokerBot initalized with a null') from exc
 
@@ -62,34 +63,16 @@ class BrokerBot:
         self.base_url = base_url
         self.socket = socket
 
-        self.headers = {}
-        self.account_url = ""
-        self.order_url = ""
-
-        self.pm = PortfolioManager(api_key, secret_key, base_url, socket)
-        self.input = self.pm.input
-        self.set_vars()
-
-        self.strategy_handler_processes = []
-
-        self.pm_loop()
+        self.account_url = "{}/v2/account".format(self.base_url)
+        self.order_url = "{}/v2/orders".format(self.base_url)
+        self.searcher_conn = search_conn
+        self.sh_pipe_conns = []
+        self.sh_instances = []
+        self.sh_processes = []
 # ====================Observers====================
-    '''
-        Overview: returns the account
 
-        Requires: none
-        Modifies: none
-        Effects: none
-        Returns: a joson containing the contents of the account.
-        Throws: ???
-        TODO: figure out what this Might throw
-    '''
-    def get_account(self):
-        r = requests.get(self.account_url, headers)
-        return json.loads(r.content)
     '''
         Overview: Updates handlers based on portfoliomanager values
-
         Requires: none
         Modifies: none
         Effects: none
@@ -102,6 +85,20 @@ class BrokerBot:
         if(self.pm.input != self.input):
             self.input = self.pm.input
         pass
+    '''
+        Overview: returns the account
+
+        Requires: none
+        Modifies: none
+        Effects: none
+        Returns: a joson containing the contents of the account.
+        Throws: ???
+        TODO: figure out what this Might throw
+    '''
+
+    def get_account(self):
+        r = requests.get(self.account_url, headers)
+        return json.loads(r.content)
 # ====================Producers====================
 # ====================Mutators====================
     '''
@@ -114,6 +111,7 @@ class BrokerBot:
         Throws: none
         TODO:
     '''
+
     def set_market_close(self):
         self.market_open = False
     '''
@@ -162,6 +160,13 @@ class BrokerBot:
                 print("Invalid Input")
             self.update()
 
+    def listen_for_searcher(self):
+        while True:
+            target_stocks = self.searcher_conn.recv()
+            for sh_conn in self.sh_pipe_conns:
+                sh_conn.send(target_stocks)
+
+
     '''
         Overview:  Start SH on own process via multiprocessing
 
@@ -173,19 +178,21 @@ class BrokerBot:
 
         TODO: Specfification & figure out strategy logic/pipeline
     '''
+
     def run(self):
         # strategies = ["ST1", "ST2", "ST3"]
         strategies = ["ST1"]
-        sh_instances = []
-        sh_processes = []
-        for strat in strategies:
-            sh_instances.append(StrategyHandler(
-                self.api_key, self.secret_key, self.base_url, self.socket, strat))
 
-        for sh in sh_instances:
-            sh_processes.append(Process(target=sh.run, args=()))
-        
-        for proc in sh_processes:
+        for strat in strategies:
+            bb_sh_conn, sh_bb_conn = Pipe()
+            self.sh_pipe_conns.append(bb_sh_conn)
+            self.sh_instances.append(StrategyHandler(
+                self.api_key, self.secret_key, self.base_url, self.socket, strat, sh_bb_conn))
+
+        for sh in self.sh_instances:
+            self.sh_processes.append(Process(target=sh.run, args=()))
+
+        for proc in self.sh_processes:
             proc.start()
 
         while True:

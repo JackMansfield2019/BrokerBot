@@ -125,10 +125,10 @@ class AlpacaDataHandler(DataHandler):
         self.ws = None
         self.socket = socket
         self.pending_tickers = []
-        self.sh_pipe_conn = None
+        self.sh_queue = None
 
-    def set_pipe_conn(self, conn):
-        self.sh_pipe_conn = conn
+    def set_sh_queue(self, q):
+        self.sh_queue = q
 
     def get_account(self):
         return self.api_account
@@ -181,13 +181,14 @@ class AlpacaDataHandler(DataHandler):
         }
         # check pending tickers, sne initial listen message, wait for new tickers,
         ws.send(json.dumps(listen_message))
-        
+
     """
     requires: Reference to the WebSocketApp and the message that was receieved.
     modifies: nothing.
     effects:  Sends a DataFrame to SH via the pipe.
     returns:  nothing.
     """
+
     def on_message(self, ws, message):
         print("received a message")
         print(message)
@@ -204,16 +205,16 @@ class AlpacaDataHandler(DataHandler):
             vol = message["data"]["v"]
             data = [[timestamp, op, high, low, cl, vol]]
             df = pd.DataFrame(data, columns=["Time", "Open", "High", "Low", "Close", "Volume"])
-            self.sh_pipe_conn.send(df)
+            self.sh_queue.put(df)
+
     def on_close(self, ws):
         print("closed connection")
 
     def on_error(self, ws, error):
         print(error)
 
-    def start_streaming(self, ticker):
-
-        self.pending_tickers.append(ticker)
+    def start_streaming(self, tickers):
+        self.pending_tickers += tickers
         print(self.socket)
         self.ws = websocket.WebSocketApp(
             self.socket,
