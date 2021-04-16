@@ -53,7 +53,8 @@ class BrokerBot:
     sockets limited to 30
     '''
 
-    def __init__(self, api_key, secret_key, base_url, socket, search_conn):
+    #def __init__(self, api_key, secret_key, base_url, socket, search_conn):
+    def __init__(self, api_key, secret_key, base_url, socket):
         if api_key is None or secret_key is None or base_url is None or socket is None:
             raise RuntimeError('BrokerBot initalized with a null') from exc
 
@@ -63,9 +64,15 @@ class BrokerBot:
         self.base_url = base_url
         self.socket = socket
 
-        self.account_url = "{}/v2/account".format(self.base_url)
-        self.order_url = "{}/v2/orders".format(self.base_url)
-        self.searcher_conn = search_conn
+        self.headers = {}
+        self.account_url = ""
+        self.order_url = ""
+
+        self.pm = PortfolioManager(api_key, secret_key, base_url, socket)
+        self.input = self.pm.input
+        self.set_vars()
+
+        #self.searcher_conn = search_conn
         self.sh_pipe_conns = []
         self.sh_instances = []
         self.sh_processes = []
@@ -144,9 +151,15 @@ class BrokerBot:
             "changestrat": self.pm.change_strat,
             "changerisk": self.pm.change_risk,
             "getstrat": self.pm.get_strat,
-            "printportfolio": self.pm.print_user_portfolio,
             "totalreturn": self.pm.get_total_return,
-            "todaysreturn": self.pm.get_todays_return
+            "todaysreturn": self.pm.get_todays_return,
+            "deposit": self.pm.deposit,
+            "withdraw": self.pm.withdraw,
+            "balance": self.pm.get_balance,
+            "liquidbalance": self.pm.get_current_liquid_cash,
+            "getcurrstrat": self.pm.get_current_strat,
+            "orderhistory": self.pm.order_history,
+            "checkpositions": self.pm.check_positions
         }
         listcommands = list(commands.keys())
         while(True):
