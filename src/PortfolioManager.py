@@ -187,7 +187,7 @@ class PortfolioManager:
     # Effects: None
     # Returns: Returns a number reflecting entire balance of a user
     # TODO: Add functionality for other API's
-    def balance(self):
+    def get_balance(self):
         pass
         
     # Overview: Displays entire order history of a user's account
@@ -227,7 +227,7 @@ class PortfolioManager:
     # Returns: Creates chart displaying all positions from a user account
     def check_positions(self):
         pos = self.api.list_positions()
-        col = ["Symbol","Avg Buy","Qty","Daily Change","Current Price",
+        col = ["Symbol","Avg Buy","Profit","Qty","Daily Change","Current Price",
                "Last Day Price","Market Value"]
         table = {i: [] for i in col}
         for i in pos:
@@ -239,6 +239,8 @@ class PortfolioManager:
             table['Current Price'].append(i.current_price)
             table['Last Day Price'].append(i.lastday_price)
             table['Market Value'].append(i.market_value)
+            table['Profit'].append("{:.2f}".format(float(i.qty)*
+                            (float(i.current_price)-float(i.avg_entry_price))))
         df = pd.DataFrame(table)
         print(df)
     # ====================Producers====================
@@ -397,6 +399,7 @@ class PortfolioManager:
         print("Enter a value to deposit")
         user = int(input())
         self.liquid += user
+        self.balance += user
         print("New Balance: {:0.2f}".format(self.balance))
         return self.liquid
     
