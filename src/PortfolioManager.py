@@ -27,6 +27,9 @@ class PortfolioManager:
         self.account_url = ""
         self.order_url = "" 
         self.input = []
+        
+        self.balance = 0
+        self.active = 0
 
         # inputs in the form [strategy, risk, DH_api, EH_api, stop_loss]
         self.initial_setup()
@@ -133,7 +136,37 @@ class PortfolioManager:
     # Returns: A float representing the value of all of the user's crypto holdings.
     def get_current_total_crypto_value(self):
         pass
+    
+    # Overview: Function that displays the entire balance of a user
+    #
+    # Params: self (PortfolioManager Object)
+    # Requires: None
+    # Modifies: None
+    # Effects: None
+    # Returns: Returns a number reflecting entire balance of a user
+    def balance(self):
+        pass
         
+    # Overview: Displays entire order history of a user's account
+    #
+    # Params: self (PortfolioManager Object)
+    # Requires: None
+    # Modifies: None
+    # Effects: None
+    # Returns: Creates chart displaying all orders from a user account
+    def order_history(self):
+        pass
+
+    # Overview: Displays all positions of a user's account
+    #
+    # Params: self (PortfolioManager Object)
+    # Requires: None
+    # Modifies: None
+    # Effects: None
+    # Returns: Creates chart displaying all positions from a user account
+    def check_positions(self):
+        pass
+    
     # ====================Producers====================
     # ====================Mutators====================
 
@@ -237,3 +270,28 @@ class PortfolioManager:
     # Throws: none
     def remove_from_watch_list(self, strat, ticker):
         pass
+    
+
+    # Overview: Function that withdraws money from balance
+    #
+    # Params: self (PortfolioManager Object),
+    #         minus is the amount from user to withdraw
+    # Requires: None
+    # Modifies: this.balance
+    # Effects: this.balance -= minus
+    # Returns: Returns a number reflecting new balance
+    # Throws: Error if withdraw is greater than balance
+    def withdraw(self, minus):
+        pass
+    
+    # Overview: Function that adds money to balance
+    #
+    # Params: self (PortfolioManager Object)
+    #         plus is the amount to add to the balance
+    # Requires: None
+    # Modifies: this.balance
+    # Effects: this.balance += plus
+    # Returns: Returns a number reflecting entire balance of a user
+    def deposit(self, plus):
+        pass
+
