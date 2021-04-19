@@ -54,7 +54,7 @@ class BrokerBot:
     '''
 
     #def __init__(self, api_key, secret_key, base_url, socket, search_conn):
-    def __init__(self, api_key, secret_key, base_url, socket):
+    def __init__(self, api_key, secret_key, base_url, socket, search_conn):
         if api_key is None or secret_key is None or base_url is None or socket is None:
             raise RuntimeError('BrokerBot initalized with a null') from exc
 
@@ -146,8 +146,8 @@ class BrokerBot:
         Throws: none
         TODO:
     '''
-    def pm_loop(self):
-        commands = {
+    def get_commands(self):
+        return {
             "changestrat": self.pm.change_strat,
             "changerisk": self.pm.change_risk,
             "getstrat": self.pm.get_strat,
@@ -161,17 +161,7 @@ class BrokerBot:
             "orderhistory": self.pm.order_history,
             "checkpositions": self.pm.check_positions
         }
-        listcommands = list(commands.keys())
-        while(True):
-            user = input()
-            if(user == 'q'):
-                break
-            if(user in listcommands):
-                commands.get(user)()
-                pass
-            else:
-                print("Invalid Input")
-            self.update()
+        
 
     def listen_for_searcher(self):
         while True:
@@ -213,4 +203,15 @@ class BrokerBot:
                 for proc in sh_processes:
                     proc.join()
             else:
-                time.sleep(60)
+                commands = self.get_commands()
+                cmd_list = list(commands)
+        
+                user = input()
+                if(user == 'q'):
+                    break
+                if(user in cmd_list):
+                    commands.get(user)()
+                    pass
+                else:
+                    print(f"Invalid Input - command options are {cmd_list}")
+                self.update()
