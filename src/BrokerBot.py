@@ -54,7 +54,7 @@ class BrokerBot:
     '''
 
     #def __init__(self, api_key, secret_key, base_url, socket, search_conn):
-    def __init__(self, api_key, secret_key, base_url, socket):
+    def __init__(self, api_key, secret_key, base_url, socket, search_conn):
         if api_key is None or secret_key is None or base_url is None or socket is None:
             raise RuntimeError('BrokerBot initalized with a null') from exc
 
@@ -69,7 +69,7 @@ class BrokerBot:
         self.order_url = ""
 
         self.pm = PortfolioManager(api_key, secret_key, base_url, socket)
-        self.input = self.pm.input
+        self.input = self.pm.get_input()
         self.set_vars()
 
         #self.searcher_conn = search_conn
@@ -89,9 +89,8 @@ class BrokerBot:
               handlers accordingly
     '''
     def update(self):
-        if(self.pm.input != self.input):
-            self.input = self.pm.input
-        pass
+        if(self.pm.get_input() != self.input):
+            self.input = self.pm.get_input()
     '''
         Overview: returns the account
 
@@ -146,8 +145,8 @@ class BrokerBot:
         Throws: none
         TODO:
     '''
-    def pm_loop(self):
-        commands = {
+    def get_commands(self):
+        return {
             "changestrat": self.pm.change_strat,
             "changerisk": self.pm.change_risk,
             "getstrat": self.pm.get_strat,
@@ -159,19 +158,11 @@ class BrokerBot:
             "liquidbalance": self.pm.get_current_liquid_cash,
             "getcurrstrat": self.pm.get_current_strat,
             "orderhistory": self.pm.order_history,
-            "checkpositions": self.pm.check_positions
+            "checkpositions": self.pm.check_positions,
+            "gettotalstockvalue": self.pm.get_current_total_stock_value,
+            "liquidate": self.pm.liquidate
         }
-        listcommands = list(commands.keys())
-        while(True):
-            user = input()
-            if(user == 'q'):
-                break
-            if(user in listcommands):
-                commands.get(user)()
-                pass
-            else:
-                print("Invalid Input")
-            self.update()
+        
 
     def listen_for_searcher(self):
         while True:
@@ -213,4 +204,15 @@ class BrokerBot:
                 for proc in sh_processes:
                     proc.join()
             else:
-                time.sleep(60)
+                commands = self.get_commands()
+                cmd_list = list(commands)
+        
+                user = input()
+                if(user == 'q'):
+                    break
+                if(user in cmd_list):
+                    commands.get(user)()
+                    pass
+                else:
+                    print(f"Invalid Input - command options are {cmd_list}")
+                self.update()
