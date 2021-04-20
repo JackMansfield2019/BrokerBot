@@ -38,7 +38,9 @@ class PortfolioManager:
         self.liquid = 0
         self.assets = 0
         self.active = 0
-        self.watch_list = ""
+        self.buying_power = 0
+        self.watch_list = []
+        self.crypto_value = 0
         self.combos = self.calc_combos()
         self.strategies = []
 
@@ -164,9 +166,10 @@ class PortfolioManager:
     # Requires: None
     # Modifies: None
     # Effects: None
-    # Returns: A float representing the value of all of the user's stocks.
+    # Returns: A float representing the value of all of the user's stock holdings.
     def get_current_total_stock_value(self):
-        pass
+        print("Total Stock Value: {:.2f}".format(self.buying_power - self.crypto_value))
+        return self.buying_power - self.crypto_value
         
     # Overview: Function that returns the user's current total value they have
     #           vested in crypto.
@@ -177,7 +180,8 @@ class PortfolioManager:
     # Effects: None
     # Returns: A float representing the value of all of the user's crypto holdings.
     def get_current_total_crypto_value(self):
-        pass
+        print("Crypto Value: {:.2f}".format(self.crypto_value))
+        return self.crypto_value
     
     # Overview: Function that displays the entire balance of a user
     #
@@ -312,7 +316,7 @@ class PortfolioManager:
         self.liquid = float(self.api.get_account().cash)
         self.balance = float(self.api.get_account().portfolio_value)
         self.assets = self.balance - self.liquid
-
+        self.buying_power = float(self.api.get_account().buying_power)
     # Overview: Changes the strategy based on user input
     #
     # Requires: none
@@ -345,26 +349,25 @@ class PortfolioManager:
         self.input[1] = risk
         self.add_strat()
     
-    # Overview: Adds a stock ticker or strategy to the user's watch list.
+    # Overview: Adds a stock ticker to the user's watch list.
     #
     # Requires: none
     # Modifies: self.watch_list
     # Effects: adds a ticker to self.watch_list
     # Returns: none
     # Throws: none
-    def add_to_watch_list(self, strat, ticker):
-        pass
+    def add_to_watch_list(self, ticker):
+        self.watch_list.append(ticker)
         
-    # Overview: Removes a stock ticker or strategy from the user's watch list.
+    # Overview: Removes a stock ticker from the user's watch list.
     #
-    # Requires: none
+    # Requires: ticker is in watch_list
     # Modifies: self.watch_list
     # Effects: removes a ticker from self.watch_list
     # Returns: none
     # Throws: none
-    def remove_from_watch_list(self, strat, ticker):
-        pass
-    
+    def remove_from_watch_list(self, ticker):
+        self.watch_list.remove(ticker)
 
     # Overview: Function that withdraws money from balance
     #
