@@ -28,7 +28,7 @@ class St(bt.Strategy):
         self.sma = bt.indicators.SimpleMovingAverage(self.data)
 
 
-data = bt.feeds.YahooFinanceCSVData(dataname='AAPL.csv')
+data = bt.feeds.YahooFinanceCSVData(dataname='data/AAPL.csv')
 
 cerebro = bt.Cerebro()
 cerebro.adddata(data)
