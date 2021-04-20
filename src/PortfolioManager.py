@@ -200,7 +200,8 @@ class PortfolioManager:
     # TODO: Add functionality for other API's
     def get_balance(self):
         print("Balance Breakdown")
-        print("Alpaca: {}".format(self.api['alpaca'].porfolio_value))
+        print("Alpaca: {:.2f}".format(float(self.api['alpaca'].get_account().
+                                      portfolio_value)))
         return self.balance
 
     # Overview: Displays entire order history of a user's account
