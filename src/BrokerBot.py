@@ -53,7 +53,6 @@ class BrokerBot:
     sockets limited to 30
     '''
 
-    #def __init__(self, api_key, secret_key, base_url, socket, search_conn):
     def __init__(self, api_key, secret_key, base_url, socket, search_conn):
         if api_key is None or secret_key is None or base_url is None or socket is None:
             raise RuntimeError('BrokerBot initalized with a null') from exc
@@ -69,7 +68,7 @@ class BrokerBot:
         self.order_url = ""
 
         self.pm = PortfolioManager(api_key, secret_key, base_url, socket)
-        self.input = self.pm.input
+        self.input = self.pm.get_input()
         self.set_vars()
 
         #self.searcher_conn = search_conn
@@ -89,9 +88,8 @@ class BrokerBot:
               handlers accordingly
     '''
     def update(self):
-        if(self.pm.input != self.input):
-            self.input = self.pm.input
-        pass
+        if(self.pm.get_input() != self.input):
+            self.input = self.pm.get_input()
     '''
         Overview: returns the account
 
@@ -133,9 +131,9 @@ class BrokerBot:
         TODO:
     '''
     def set_vars(self):
-        self.headers = self.pm.headers
-        self.account_url = self.pm.account_url
-        self.order_url = self.pm.order_url
+        self.headers = self.pm.headers['alpaca']
+        self.account_url = self.pm.account_url['alpaca']
+        self.order_url = self.pm.order_url['alpaca']
     '''
         Overview: infinite loop to update portfoliomanager values
 
@@ -159,7 +157,9 @@ class BrokerBot:
             "liquidbalance": self.pm.get_current_liquid_cash,
             "getcurrstrat": self.pm.get_current_strat,
             "orderhistory": self.pm.order_history,
-            "checkpositions": self.pm.check_positions
+            "checkpositions": self.pm.check_positions,
+            "gettotalstockvalue": self.pm.get_current_total_stock_value,
+            "liquidate": self.pm.liquidate
         }
         
 
