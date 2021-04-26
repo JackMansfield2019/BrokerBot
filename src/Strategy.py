@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod  # Abstract class module for python.
 from DataHandler import DataHandler
 from ExecutionHandler import ExecutionHandler
+from backtrader import backtrader as bt
 from threading import Thread
 from multiprocessing import Process, Pipe
 from ENUMS import *
@@ -26,7 +27,7 @@ TODO:
     - Refine backtrading setup and functions.
     -
 """
-class Strategy(ABC):
+class Strategy(ABC, bt.Strategy):
     @abstractmethod
     def __init__(self, dh: DataHandler, eh: ExecutionHandler, ticker: str, strat_search_conn):
         self.dh = dh
@@ -73,7 +74,19 @@ class Strategy(ABC):
     @abstractmethod
     def next(self):
         #Buy Conditional
+        #random buy thing for example.
+        if self.position.size ==0:
+            size = int(self.broker.getcash() / 1+ self.position.size)
+            self.buy(size=size)
+        # Sell Conditional
+        
+        pass
 
+    @abstractmethod
+    def run_strat(self):
+        #Buy Conditional
+        #just start streaming for example.
+        self.dh.start_streaming('TSLA');
 
         # Sell Conditional
         
