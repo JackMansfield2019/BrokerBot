@@ -184,13 +184,13 @@ class BrokerBot:
 
     def run(self):
         # strategies = ["ST1", "ST2", "ST3"]
-        strategies = ["ST1"]
+        # For each strategy category create Strategies for category, create screener      
+        strategy_categories = ["ST1", "ST2"]
 
-        for strat in strategies:
-            bb_sh_conn, sh_bb_conn = Pipe()
-            self.sh_pipe_conns.append(bb_sh_conn)
+        for strat in strategy_categories:
+           
             self.sh_instances.append(StrategyHandler(
-                self.api_key, self.secret_key, self.base_url, self.socket, strat, sh_bb_conn))
+                self.api_key, self.secret_key, self.base_url, self.socket, strat))
 
         for sh in self.sh_instances:
             self.sh_processes.append(Process(target=sh.run, args=()))

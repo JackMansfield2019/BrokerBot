@@ -26,13 +26,15 @@ TODO:
 """
 class Strategy(ABC):
     @abstractmethod
-    def __init__(self, dh: DataHandler, eh: ExecutionHandler, ticker: str):
+    def __init__(self, dh: DataHandler, eh: ExecutionHandler, ticker: str, strat_search_conn):
         self.dh = dh
         self.eh = eh
         self.ticker = ticker
         self.dh_queue = None
         self.eh_conn = None
         self.queue = []
+        self.strat_search_conn = strat_search_conn
+        self.target_stocks = []
     @abstractmethod
     def start(self):
         
@@ -50,7 +52,20 @@ class Strategy(ABC):
         dh_stream_thread.start()
         dh_listen_thread.start()
 
+        searcher_thread = Thread(target=self.listen_for_searcher, args=())
+        searcher_thread.start()
+
+        
         # Initialize any technical indicators needed from the Lib.
+        # Start strategy, pop stock from target stocks when needed
+
+    @abstractmethod
+    def listen_for_searcher(self):
+        while True:
+            target_stock = self.strat_search_conn.recv()
+            if target_stock not in self.target_stocks:
+                self.target_stocks.append(target_stock)
+
 
     @abstractmethod
     def next(self):

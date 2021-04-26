@@ -4,6 +4,9 @@ from threading import Thread
 import queue
 import copy
 from multiprocessing import Process, Pipe
+from Strategy import Strategy
+from Searcher import Searcher
+from utilities import market_closed
 
 
 """
@@ -35,17 +38,23 @@ class StrategyHandler:
     Returns: none
     """
 
-    def __init__(self, api_key, secret_key, base_url, socket, strategy, bb_conn):
-        self.strategy = strategy
-        self.DataHandler = AlpacaDataHandler(
-            api_key, secret_key, base_url, socket)
-        self.ExecutionHandler = AlpacaExecutionHandler(
-            api_key, secret_key, base_url)
+    def __init__(self, api_key, secret_key, base_url, socket, strategy):
+        self.api_key = api_key
+        self.secret_key = secret_key
+        self.base_url = base_url
+        self.socket = socket
+        self.strategy_category = strategy
 
-        self.bb_conn = bb_conn
-        self.dh_queue = None
-        self.eh_conn = None
-        self.target_stocks = []
+
+        self.strategies = []
+        self.searcher = None
+        
+
+        
+
+       
+
+        
     # ====================Observers====================
     """
     Overview: tests & prints if we revieved a message from the DH
@@ -57,10 +66,10 @@ class StrategyHandler:
     Throws: none
     """
 
-    def test_dh_queue(self):
-        while True:
-            data_frame = self.dh_queue.get()
-            print(f"SH RECV: {data_frame}")
+    # def test_dh_queue(self):
+    #     while True:
+    #         data_frame = self.dh_queue.get()
+    #         print(f"SH RECV: {data_frame}")
     # ====================Producers====================
     # ====================Mutators====================
 
@@ -162,11 +171,11 @@ class StrategyHandler:
     Throws: RunTimeError if any of the parameters are null
     """
 
-    def set_eh_dh_conns(self, dh_q, eh_conn):
-        if dh_q is None or eh_conn is None:
-            raise RuntimeError('set_eh_dh_conns called with a null') from exc
-        self.dh_queue = dh_q
-        self.eh_conn = eh_conn
+    # def set_eh_dh_conns(self, dh_q, eh_conn):
+    #     if dh_q is None or eh_conn is None:
+    #         raise RuntimeError('set_eh_dh_conns called with a null') from exc
+    #     self.dh_queue = dh_q
+    #     self.eh_conn = eh_conn
 
 
     """
@@ -182,31 +191,37 @@ class StrategyHandler:
     """
 
     def run(self):
-        sh_dh_queue = queue.LifoQueue()
-        sh_eh_conn, eh_sh_conn = Pipe()
+       # TODO: add logic for starting proper strategies from a given categroy
+        sample_strategies = ["strat1", "strat2", "strat3"]
+        searcher_strat_conns = []
+        # add switch statement for instantiating correct strategy class based on strat ^
+        for start in sample_strategies:
+            st_dh = AlpacaDataHandler(self.api_key, self.secret_key, self.base_url, self.socket)
+            st_eh = AlpacaExecutionHandler(self.api_key, self.secret_key, self.base_url)
+            search_strat, strat_search = Pipe()
 
-        self.set_eh_dh_conns(sh_dh_queue, sh_eh_conn)
-        # Set queue in DH
-        self.DataHandler.set_sh_queue(sh_dh_queue)
+            # replace with real class
+            self.strategies.append(Strategy(st_dh, st_eh, "None", strat_search))
+            searcher_strat_conns.append(search_strat)
 
-        dh_stream_thread = Thread(
-            target=self.DataHandler.start_streaming, args=(["TSLA"],))
+        self.searcher = Searcher(self.api_key, self.secret_key, self.base_url, self.socket, searcher_strat_conns)
 
-        dh_listen_thread = Thread(target=self.test_dh_queue, args=())
+        searcher_proc = Process(target=self.searcher.search, args=())
+        searcher_proc.start()
 
-        dh_stream_thread.start()
-        dh_listen_thread.start()
+        strategy_processes = []
+        for strat in self.strategies:
+            strat_proc = Process(target=strat.start, args=())
+            strat_proc.start()
+            strategy_processes.append(strat_proc)            
+       
 
-
-
-        prev_target_stocks = copy.deepcopy(self.target_stocks)
-        # TODO: create logic for determining channel name based on strat
-        channel_name = "T"
-        # TODO: refine this once searcher routine more explictily defined
         while True:
-            # if BB updates us with new target stocks from searcher, clean up DH process and start new one with updated target stocks
-            new_target_stocks = self.bb_conn.recv()
-            target_tickers = set(prev_target_stocks + new_target_stocks)
-            self.DataHandler.listen(target_tickers, channel_name)
+            if market_closed:
+                searcher_proc.join()
+                for proc in strategy_processes:
+                    proc.join()
 
+            else:
+                time.sleep(60)
         

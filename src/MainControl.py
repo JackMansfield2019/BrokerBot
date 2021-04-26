@@ -1,7 +1,7 @@
 from BrokerBot import BrokerBot
 from Searcher import Searcher
 from multiprocessing import Process, Pipe
-# import Searcher
+from utilities import market_closed
 import datetime
 import pytz  # pip
 import holidays  # pip
@@ -41,12 +41,10 @@ class MainControl:
         self.broker_bots.append(BrokerBot(
             self.api_key, self.secret_key, self.base_url, self.socket, bb_conn))
 
-        # self.searchers.append(Searcher(
-        #     self.api_key, self.secret_key, self.base_url, self.socket, search_conn))
 
     def run(self):
         bb_proc = Process(target=self.broker_bots[0].run, args=())
-        # search_proc = Process(target=self.searchers[0].run, args=())
+        
         # TODO: Implement timing algo fully
         while market_closed and not DEBUG:
             print("MARKET CLOSED : SLEEPING FOR 1 MIN")
@@ -91,29 +89,6 @@ class MainControl:
 
     #     # for thread in listening_threads:
     #     #     thread.start()
-
-
-def market_closed(now=None):
-    tz = pytz.timezone('US/Eastern')
-    us_holidays = holidays.US()
-
-    openTime = datetime.time(hour=9, minute=30, second=0)
-    closeTime = datetime.time(hour=16, minute=0, second=0)
-
-    if not now:
-        now = datetime.datetime.now(tz)
-
-    # If a holiday
-    if now.strftime('%Y-%m-%d') in us_holidays:
-        return True
-    # If before 0930 or after 1600
-    if (now.time() < openTime) or (now.time() > closeTime):
-        return True
-    # If it's a weekend
-    if now.date().weekday() > 4:
-        return True
-
-    return False
 
 
 if __name__ == "__main__":

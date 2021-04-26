@@ -10,12 +10,14 @@ from statistics import mean  # used to calculate avg volume
 
 
 class Searcher:
-  def __init__(self, API_key_id, API_secret_key, base_url, socket, bb_conn):
+  def __init__(self, API_key_id, API_secret_key, base_url, socket, strat_conns):
     self.headers = {"APCA-API-KEY-ID": API_key_id,"APCA-API-SECRET-KEY": API_secret_key}
     self.base_url = base_url
     self.account_url= "{}/v2/account".format(self.base_url)
     self.order_url = "{}/v2/orders".format(self.base_url)
-    self.bb_conn = bb_conn
+    self.strat_conns = strat_conns
+    self.strat_counter = 0
+    self.stock_set = set()
     self.api = tradeapi.REST(
                           self.headers["APCA-API-KEY-ID"],
                           self.headers["APCA-API-SECRET-KEY"],
@@ -74,6 +76,16 @@ class Searcher:
             if volume == self.stock_data.iloc(stock, "Volume"):
               best_stocks.append(stock) 
         
+
+        # map each stock to strategy connection and forward to strategy
+        for stock in best_stocks:
+          if stock not in self.stock_set:
+            strat_conn = self.strat_conns[self.strat_counter]
+            strat_conn.send(stock)
+            self.stock_set.add(stock)
+            self.strat_counter += 1 if self.strat_counter + 1 <= (len(self.strat_conns) - 1) else self.strat_counter = 0
+            
+
         return best_stocks # returns the top 5 stocks to look at due to their biggest change in average volume 
 
 
