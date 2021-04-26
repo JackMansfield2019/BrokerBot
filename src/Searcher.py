@@ -15,15 +15,13 @@ class Searcher:
     self.base_url = base_url
     self.account_url= "{}/v2/account".format(self.base_url)
     self.order_url = "{}/v2/orders".format(self.base_url)
-    self.bb_conn = bb_conn
-    self.api = tradeapi.REST(
-                          self.headers["APCA-API-KEY-ID"],
-                          self.headers["APCA-API-SECRET-KEY"],
-                          base_url
-          )
+    self.queue = bb_conn # priority queue 
+    self.api = tradeapi.REST( self.headers["APCA-API-KEY-ID"], self.headers["APCA-API-SECRET-KEY"], base_url )
     # self.api_account = api.get_account()
     self.socket = socket
-    self.stocks = pd.read_csv('S&P500-Symbols.csv')
+    #self.stocks = pd.read_csv('S&P500-Symbols.csv')
+    self.stocks = pd.read_csv('symbols.csv') 
+    """
     Columns = ['Ticker', 'Time', 'Volume']
     self.dataframe = pd.DataFrame(columns = Columns) 
     self.stock_data = dataframe.set_index("Ticker", drop = False) 
@@ -32,92 +30,75 @@ class Searcher:
     for stock in self.stocks:
       t = int(time.time())
       self.stock_data = self.stock_data.append( pd.Series([ stock, t], index = cols ), ignore_index = True) 
+    """
+    self.stocks = pd.read_csv('S&P500-Symbols.csv')
+    time = int(time.time()) 
+    stock_data = {}
+    for stock in stocks:
+      stock_data[stock] = time 
+    #self.queue = [[]] # priority queue
 
   def get_account(self):
     return account
 
-  '''
-    Overview: loops through each stock in the S&P-500, builds a dataframe of equal-weighted volume of stocks in the S&P500, then returns a decision***
-
-    Requires: none
-    Modifies: none
-    Effects: none
-    Returns: *** 
-
-    At Present: Creates the unweighted S&P500 of the stocks' volumes
-    To Do: Figure out what volume calculation to use, so select stock and add it to the priority queue. 
-  '''
+  """
+    Overview: updates the priority of each stock, THIS IS THE RUN METHOD OF SCREENER 
+    Effects: updates the weights of the priority queue's stocks 
+  """
   def search(self):
-    Volumes = []
-    for stock in self.stocks and time_initial in self.stock_data.items():
-        time_final, average_volume = self.get_data(stock, time_initial) 
-        Volumes.append(average_volume)
-        stock_data.at[stock, 'Time'] = time_final # updates the stock's time cell 
-        stock_data.at[stock, 'Volume'] = average_volume # updates the stock's volume cell 
-
-        # looking at top 5 stocks
-        best = [] 
-
-        # Puts the top 5 changes in volume into best loop 
-        for volume in Volumes:
-          if len(best) < 5:
-             best.append(volume) 
-          else:
-            if vol > min(best):
-              best.remove(min(best))
-              best.append(volume)
-
-        
-        best_stocks = [] # Appends the respective stock tickers of the volumes in best list. 
-        for volume in best:
-          for stock in self.stocks:
-            if volume == self.stock_data.iloc(stock, "Volume"):
-              best_stocks.append(stock) 
-        
-        return best_stocks # returns the top 5 stocks to look at due to their biggest change in average volume 
+    for stock in self.stocks:
+      time_initial = stock_data[stock] 
+      time_final, stock_volume = self.get_data(stock, time_initial, TimeFrame.FIVE_MIN) 
+      stock_data[stock] = time_final 
+      self.ACV(stock_volume, stock) 
 
 
-  '''
+  """
     Overview: returns the previous 5-minute-volume for the given stock by the client 
+    Returns: volume of the stock that was passed in
+    Throws:
+      - Exception if time_initial < 0 
+      - Exception if stock is None/Null 
+    N.B.: Ticker Limit per API Request = 200 
+  """
+  def get_data(self, stock, time_initial, timeframe):
+    if time_initial < 0: raise Exception("Time Initial cannot be < 0!")
+    if stock is None or stock == "": raise Exception("stock cannot be None/Null or blank!")
 
-    Requires: stock is not null
-    Modifies: none
-    Effects: none
-    Returns: volume of the stock that was passed in 
-
-    Question: How many tickers are we limited to per API request? Answer: 200 
-    sockets limited to 30 
-
-  '''
-  def get_data(self, stock, time_initial):
-    # stock refers to the stock passed in
-    # 5Min refers to the timeframe
-    # limit=5 refers to how many bars back we take the volume 
-    # time frame within the day 
-
-    # gets seconds elapsed, because the time is in Unix Epoch 
-    # subtracts current time with the stock's previous end-time
-    time_elapsed = int(time.time()) - time_initial
-
-    # finds how many 5-minute bars have passed since time_initial (timeIn) 
-    bars = time_elapsed/300 
-
-    barset = api.get_barset(stock, '5Min', limit=bars)
-    # stock_bar = barset[stock]
+    time_current = int(time.time())  
+    barset = DH.get_bars(stock, time_initial, time_current, timeframe)  
     
-    # assuming the previous bar from current is in the last index of barset 
+    #assuming the previous bar from current is in the last index of barset 
     last = len(barset) - 1 
     stock_time = barset[last][0]
 
-    # stock_vols contains the volume of each bar of the stock 
-    stock_volumes = []
+    stock_volume = []
     for i in range(0, len(barset)):
-      stock_volumes.append(barset[i][5]) #appends the volume of each bar in barset to the stock_vol list 
-    
-    # calculates the mean of the stock volumes 
-    stock_average_volume = int(mean(stock_volumes)) 
-    return stock_time, stock_average_volume 
+      stock_close.append(barset[i][5])
+    return stock_time, stock_volume 
+  
+  
+  """
+    Overview: calculates the average change in volume 
+    Requires: volumes is not None
+    Returns: updated priorities of each stock in stocks list  
+  """
+  def ACV(self, volumes, stock):
+    acv = int(mean(volumes)) 
+    s = [acv, stock]
+    length = len(self.queue) 
 
+    if len(self.queue) == 0:
+      self.queue.append(s) 
+    else:
+      for i in range(0,length):
+        if s[0] > self.queue[i][0]:
+          self.queue.insert(i, s) 
+          break 
+        elif s[0] < self.queue[i][0] and i == length - 1:
+          self.queue.append(s)  
+
+"""
 # *** gets the data from the broker bot priority queue ***
 
   def set_socket(self,socket = "wss://data.alpaca.markets/stream"):
@@ -132,27 +113,28 @@ class Searcher:
                    trail_price, trail_percent)
 
   def on_open():
-      print("opened-stream")
-      auth_data = {
-          "action": "authenticate",
-          "data": {"key_id": config.API_KEY, "secret_key": config.SECRET_KEY}
-      }
+    print("opened-stream")
+    auth_data = {
+        "action": "authenticate",
+        "data": {"key_id": config.API_KEY, "secret_key": config.SECRET_KEY}
+    }
 
-      ws.send(json.dumps(auth_data))
+    ws.send(json.dumps(auth_data))
 
-      listen_message = {"action": "listen", "data": {"streams": ["AM.TSLA"]}}
+    listen_message = {"action": "listen", "data": {"streams": ["AM.TSLA"]}}
 
-      ws.send(json.dumps(listen_message))
+    ws.send(json.dumps(listen_message))
 
 
   def on_message(ws, message):
-      print("received a message")
-      print(message)
+    print("received a message")
+    print(message)
 
   def on_close(ws):
-      print("closed connection")
+    print("closed connection")
 
   socket = "wss://data.alpaca.markets/stream"
 
   ws = websocket.WebSocketApp(socket, on_open=on_open, on_message=on_message, on_close=on_close)
   ws.run_forever()
+"""
