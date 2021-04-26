@@ -133,16 +133,3 @@ class Strategy(ABC, bt.Strategy):
         else:
             printf("Popping {} from queue".format(self.queue[pos]))
             self.queue.pop(pos)
-    """
-    Overview: Constructs and returns proper DH based on pass in enum
-
-    Params: ENUM for DH_api
-            params is list containg DH parameters
-    Requires: none
-    Modifies: none
-    Effects: none
-    Returns: Valid DH object based on parameter
-    Throws: ValueError if parameter is invalid
-    """
-    def construct_dh(self, enum, params):
-       return self.dh_factory(enum, params)

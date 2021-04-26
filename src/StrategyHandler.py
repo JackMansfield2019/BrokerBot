@@ -196,8 +196,10 @@ class StrategyHandler:
         searcher_strat_conns = []
         # add switch statement for instantiating correct strategy class based on strat ^
         for start in sample_strategies:
-            st_dh = AlpacaDataHandler(self.api_key, self.secret_key, self.base_url, self.socket)
-            st_eh = AlpacaExecutionHandler(self.api_key, self.secret_key, self.base_url)
+            dh_params = [self.api_key, self.secret_key, self.base_url, self.socket]
+            st_dh = self.dh_factory.construct_dh(1, dh_params)
+            eh_params = [self.api_key, self.secret_key, self.base_url]
+            st_eh = self.eh_factory.construct_eh(1, eh_params)
             search_strat, strat_search = Pipe()
 
             # replace with real class
@@ -225,44 +227,3 @@ class StrategyHandler:
             else:
                 time.sleep(60)
         
-    """
-    Overview: Constructs and returns proper DH based on passed in enum
-
-    Params: ENUM for DH_api
-            params is list containg DH parameters
-    Requires: none
-    Modifies: none
-    Effects: none
-    Returns: Valid DH object based on parameter
-    Throws: ValueError if parameter is invalid
-    """
-    def construct_dh(self, enum, params):
-       return self.dh_factory(enum, params)
-    
-    """
-    Overview: Constructs and returns proper EH based on passed in enum
-
-    Params: ENUM for EH_api
-            params is list containg EH parameters
-    Requires: none
-    Modifies: none
-    Effects: none
-    Returns: Valid EH object based on parameter
-    Throws: ValueError if parameter is invalid
-    """
-    def construct_eh(self, enum, params):
-       return self.eh_factory(enum, params)
-    
-    """
-    Overview: Constructs and returns proper strategy based on passed in enum
-
-    Params: ENUM for Strategy
-            params is list containg Strategy parameters
-    Requires: none
-    Modifies: none
-    Effects: none
-    Returns: Valid Strategy object based on parameter
-    Throws: ValueError if parameter is invalid
-    """
-    def construct_strat(self, enum, params):
-       return self.strategy_factory(enum, params)
