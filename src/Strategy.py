@@ -86,7 +86,9 @@ class Strategy(ABC, bt.Strategy):
     def run_strat(self):
         #Buy Conditional
         #just start streaming for example.
-        self.dh.start_streaming('TSLA');
+        self.ticker = self.queue[0]
+        self.pop_queue()
+        self.dh.start_streaming(self.ticker);
 
         # Sell Conditional
         
