@@ -7,6 +7,8 @@ from multiprocessing import Process, Pipe
 from Strategy import Strategy
 from Searcher import Searcher
 from utilities import market_closed
+from Factory import DH_factory
+from Factory import EH_factory
 
 
 """
@@ -49,11 +51,9 @@ class StrategyHandler:
         self.strategies = []
         self.searcher = None
         
-
-        
-
-       
-
+        self.dh_factory = DH_factory()
+        self.eh_factory = EH_factory()
+        #self.strat_factory = Strategy_factory()
         
     # ====================Observers====================
     """
@@ -225,3 +225,44 @@ class StrategyHandler:
             else:
                 time.sleep(60)
         
+    """
+    Overview: Constructs and returns proper DH based on passed in enum
+
+    Params: ENUM for DH_api
+            params is list containg DH parameters
+    Requires: none
+    Modifies: none
+    Effects: none
+    Returns: Valid DH object based on parameter
+    Throws: ValueError if parameter is invalid
+    """
+    def construct_dh(self, enum, params):
+       return self.dh_factory(enum, params)
+    
+    """
+    Overview: Constructs and returns proper EH based on passed in enum
+
+    Params: ENUM for EH_api
+            params is list containg EH parameters
+    Requires: none
+    Modifies: none
+    Effects: none
+    Returns: Valid EH object based on parameter
+    Throws: ValueError if parameter is invalid
+    """
+    def construct_eh(self, enum, params):
+       return self.eh_factory(enum, params)
+    
+    """
+    Overview: Constructs and returns proper strategy based on passed in enum
+
+    Params: ENUM for Strategy
+            params is list containg Strategy parameters
+    Requires: none
+    Modifies: none
+    Effects: none
+    Returns: Valid Strategy object based on parameter
+    Throws: ValueError if parameter is invalid
+    """
+    def construct_strat(self, enum, params):
+       return self.strategy_factory(enum, params)

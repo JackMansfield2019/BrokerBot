@@ -3,6 +3,8 @@ from DataHandler import DataHandler
 from ExecutionHandler import ExecutionHandler
 from threading import Thread
 from multiprocessing import Process, Pipe
+from ENUMS import *
+from Factory import *
 import queue
 
 """
@@ -35,6 +37,7 @@ class Strategy(ABC):
         self.queue = []
         self.strat_search_conn = strat_search_conn
         self.target_stocks = []
+        self.dh_factory = DH_factory()
     @abstractmethod
     def start(self):
         
@@ -117,3 +120,16 @@ class Strategy(ABC):
         else:
             printf("Popping {} from queue".format(self.queue[pos]))
             self.queue.pop(pos)
+    """
+    Overview: Constructs and returns proper DH based on pass in enum
+
+    Params: ENUM for DH_api
+            params is list containg DH parameters
+    Requires: none
+    Modifies: none
+    Effects: none
+    Returns: Valid DH object based on parameter
+    Throws: ValueError if parameter is invalid
+    """
+    def construct_dh(self, enum, params):
+       return self.dh_factory(enum, params)

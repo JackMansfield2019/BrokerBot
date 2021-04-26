@@ -11,6 +11,7 @@ import time
 from multiprocessing import Process, Pipe
 import os
 from StrategyHandler import StrategyHandler
+import psutil
 
 """
 overview: (description of the class)
@@ -134,13 +135,60 @@ class BrokerBot:
         self.headers = self.pm.headers['alpaca']
         self.account_url = self.pm.account_url['alpaca']
         self.order_url = self.pm.order_url['alpaca']
+
     '''
-        Overview: infinite loop to update portfoliomanager values
+        Overview: Halts all trading
 
         Requires: none
-        Modifies: self.input
-        Effects: self.input updates based on user input
+        Modifies: none
+        Effects: none
         Returns: none
+        Throws: none
+    '''
+    def halt_trading(self):
+        for i in self.sh_processes:
+            pid = i.pid
+            p = psutil.Process(pid)
+            p.suspend()
+    
+    '''
+        Overview: Resumes all trading
+
+        Requires: none
+        Modifies: none
+        Effects: none
+        Returns: none
+        Throws: none
+    '''
+    def resume_trading(self):
+        for i in self.sh_processes:
+            pid = i.pid
+            p = psutil.Process(pid)
+            p.resume()
+
+    '''
+        Overview: Stops a specified strategy
+
+        Requires: input is in running strategies
+        Modifies: none
+        Effects: none
+        Returns: none
+        Throws: none
+    '''
+    def stop_strategy(self):
+        print("Enter index of strategy process to terminate: ")
+        print(self.sh_processes)
+        user = int(input())
+        self.sh_processes[user].terminate()
+        self.sh_processes[user].close()
+
+    '''
+        Overview: Outputs available commands
+
+        Requires: none
+        Modifies: none
+        Effects: noe
+        Returns: dictionary containing available portfolio manager commands
         Throws: none
         TODO:
     '''
@@ -159,7 +207,10 @@ class BrokerBot:
             "orderhistory": self.pm.order_history,
             "checkpositions": self.pm.check_positions,
             "gettotalstockvalue": self.pm.get_current_total_stock_value,
-            "liquidate": self.pm.liquidate
+            "liquidate": self.pm.liquidate,
+            "halttrading": self.halt_trading,
+            "resumetrading": self.resume_trading,
+            "stopstrategy": self.stop_strategy
         }
         
 
