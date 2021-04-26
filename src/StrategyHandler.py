@@ -40,12 +40,13 @@ class StrategyHandler:
     Returns: none
     """
 
-    def __init__(self, api_key, secret_key, base_url, socket, strategy):
+    def __init__(self, api_key, secret_key, base_url, socket, strategy, strat_input):
         self.api_key = api_key
         self.secret_key = secret_key
         self.base_url = base_url
         self.socket = socket
         self.strategy_category = strategy
+        self.strategy_input = strat_input
 
 
         self.strategies = []
@@ -197,9 +198,9 @@ class StrategyHandler:
         # add switch statement for instantiating correct strategy class based on strat ^
         for start in sample_strategies:
             dh_params = [self.api_key, self.secret_key, self.base_url, self.socket]
-            st_dh = self.dh_factory.construct_dh(1, dh_params)
+            st_dh = self.dh_factory.construct_dh(self.strategy_input[2], dh_params)
             eh_params = [self.api_key, self.secret_key, self.base_url]
-            st_eh = self.eh_factory.construct_eh(1, eh_params)
+            st_eh = self.eh_factory.construct_eh(self.strategy_input[3], eh_params)
             search_strat, strat_search = Pipe()
 
             # replace with real class

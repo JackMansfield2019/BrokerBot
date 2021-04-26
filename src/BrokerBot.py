@@ -103,7 +103,7 @@ class BrokerBot:
     '''
 
     def get_account(self):
-        r = requests.get(self.account_url, headers)
+        r = requests.get(self.account_url['alpaca'], headers['alpaca'])
         return json.loads(r.content)
 # ====================Producers====================
 # ====================Mutators====================
@@ -241,7 +241,7 @@ class BrokerBot:
         for strat in strategy_categories:
            
             self.sh_instances.append(StrategyHandler(
-                self.api_key, self.secret_key, self.base_url, self.socket, strat))
+                self.api_key, self.secret_key, self.base_url, self.socket, strat, self.input))
 
         for sh in self.sh_instances:
             self.sh_processes.append(Process(target=sh.run, args=()))
