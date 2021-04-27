@@ -31,6 +31,7 @@ class Searcher:
           )
     # self.api_account = api.get_account()
     self.socket = socket
+    self.DH = AlpacaDataHandler(API_key_id, API_secret_key, base_url) 
 
     """
     Columns = ['Ticker', 'Time', 'Volume']
@@ -77,15 +78,18 @@ class Searcher:
     if stock is None or stock == "": raise Exception("stock cannot be None/Null or blank!")
 
     time_current = int(time.time())  
-    barset = DH.get_bars(stock, time_initial, time_current, timeframe)  
+    bars = int((time_current - time_initial) / 300)
+    barset = DH.get_bars(stock, time_initial, time_current, timeframe, bars)   
     
     #assuming the previous bar from current is in the last index of barset 
-    last = len(barset) - 1 
-    stock_time = barset[last][0]
+    #last = len(barset) - 1 
+    #stock_time = barset[last][0]
 
     stock_volume = []
-    for i in range(0, len(barset)):
-      stock_close.append(barset[i][5])
+    row_count = barset.shape[0] 
+    stock_time = time_current 
+    for i in range(0, row_count):
+      stock_close.append(barset.iloc[i, 5])
     return stock_time, stock_volume 
   
 
