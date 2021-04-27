@@ -7,6 +7,7 @@ import math
 import alpaca_trade_api as tradeapi
 import time  # used for calculating time
 from statistics import mean  # used to calculate avg volume
+from enum import Enum 
 
 class TimeFrame(Enum):
   ONE_MIN = "1Min"
