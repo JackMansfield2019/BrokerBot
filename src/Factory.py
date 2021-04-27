@@ -1,7 +1,7 @@
-from DataHandler import DataHandler
-from ExecutionHandler import ExecutionHandler
+from DataHandler import *
+from ExecutionHandler import *
 from Strategy import Strategy
-
+from RL import *
 class DH_factory:
 
     # Overview: Class that creates and returns any DH object
@@ -17,6 +17,9 @@ class DH_factory:
     Returns: Valid DH object based on parameter
     Throws: ValueError if parameter is invalid
     """
+    def __init__(self):
+        return
+
     def construct_dh(self, enum, params):
         if enum == 1:
             return self.dh_alpaca(params)
@@ -101,6 +104,8 @@ class EH_factory:
 
     # Overview: Class that creates and returns any EH object
 
+    def __init__(self):
+        return
     """
     Overview: Constructs and returns proper DH based on passed in enum
 
@@ -182,6 +187,8 @@ class Strategy_factory:
 
     # Overview: Class that creates and returns any Strategy object
 
+    def __init__(self):
+        return
     """
     Overview: Constructs and returns proper startegy based on passed in enum
 
@@ -226,7 +233,7 @@ class Strategy_factory:
     Throws: none
     """
     def short_low_risk(self, params):
-        strat = Strategy(0,params[0], params[1], params[2], params[3])
+        strat = RL(params[0], params[1], params[2], params[3])
         return strat
     
     """

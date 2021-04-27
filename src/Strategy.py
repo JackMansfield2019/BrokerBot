@@ -28,7 +28,7 @@ TODO:
     - Refine backtrading setup and functions.
     -
 """
-class Strategy(ABC, bt.Strategy):
+class Strategy(ABC):
     @abstractmethod
     def __init__(self, dh: DataHandler, eh: ExecutionHandler, ticker: str, strat_search_conn):
         self.dh = dh
@@ -112,7 +112,7 @@ class Strategy(ABC, bt.Strategy):
             current_candle = current_close - current_open 
 
             # Bullish Engulfing Buy Condition 
-            if (previous_candle < 0 and current_candle > 0) and (current_open =< previous_open and current_close > previous_close):
+            if (previous_candle < 0 and current_candle > 0) and (current_open <= previous_open and current_close > previous_close):
                 signal = 'buy'
                 #self.eh.start_streaming(signal) 
                 #money_alloc = self.eh.money_alloc_pre(0.0025, 15) 
@@ -131,12 +131,12 @@ class Strategy(ABC, bt.Strategy):
             while time.time() < next_time:
                 #time.sleep(1) 
 
-            """    
-            if time.time() = next_time:
-                continue 
-            else:
-                time.sleep(1) 
-            """ 
+                """    
+                if time.time() = next_time:
+                    continue 
+                else:
+                    time.sleep(1) 
+                """ 
    
     """
     Overview: sets the pipe connections

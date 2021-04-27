@@ -4,7 +4,9 @@ from threading import Thread
 import queue
 import copy
 from multiprocessing import Process, Pipe
-
+from Factory import *
+from Searcher import *
+from utilities import market_closed
 
 """
     Overview:
@@ -42,11 +44,15 @@ class StrategyHandler:
         self.socket = socket
         self.strategy_category = strategy
         self.strategy_input = strat_input
+        self.strategies = []
 
-        self.bb_conn = bb_conn
         self.dh_queue = None
         self.eh_conn = None
         self.target_stocks = []
+
+        self.dh_factory = DH_factory()
+        self.eh_factory = EH_factory()
+        self.strat_factory = Strategy_factory()
     # ====================Observers====================
     """
     Overview: tests & prints if we revieved a message from the DH
@@ -184,18 +190,19 @@ class StrategyHandler:
 
     def run(self):
        # TODO: add logic for starting proper strategies from a given categroy
-        sample_strategies = ["strat1", "strat2", "strat3"]
+        sample_strategies = ["strat1"]
         searcher_strat_conns = []
         # add switch statement for instantiating correct strategy class based on strat ^
-        for start in sample_strategies:
+        for strat in sample_strategies:
             dh_params = [self.api_key, self.secret_key, self.base_url, self.socket]
+            print(self.strategy_input[2])
+            print(dh_params)
             st_dh = self.dh_factory.construct_dh(self.strategy_input[2], dh_params)
             eh_params = [self.api_key, self.secret_key, self.base_url]
             st_eh = self.eh_factory.construct_eh(self.strategy_input[3], eh_params)
             search_strat, strat_search = Pipe()
-
-            # replace with real class
-            self.strategies.append(Strategy(st_dh, st_eh, "None", strat_search))
+ 
+            self.strategies.append(self.strat_factory.construct_strat(self.strategy_input[0], [st_dh, st_eh, "None", strat_search]))
             searcher_strat_conns.append(search_strat)
 
         self.searcher = Searcher(self.api_key, self.secret_key, self.base_url, self.socket, searcher_strat_conns)
@@ -205,26 +212,19 @@ class StrategyHandler:
 
         strategy_processes = []
         for strat in self.strategies:
-            strat_proc = Process(target=strat.start, args=())
+            strat_proc = Process(target=strat.run_strat, args=())
             strat_proc.start()
             strategy_processes.append(strat_proc)            
-       
+     
 
-        dh_listen_thread = Thread(target=self.test_dh_queue, args=())
-
-        dh_stream_thread.start()
-        dh_listen_thread.start()
-
-
-
-        prev_target_stocks = copy.deepcopy(self.target_stocks)
-        # TODO: create logic for determining channel name based on strat
-        channel_name = "T"
-        # TODO: refine this once searcher routine more explictily defined
         while True:
-            # if BB updates us with new target stocks from searcher, clean up DH process and start new one with updated target stocks
-            new_target_stocks = self.bb_conn.recv()
-            target_tickers = set(prev_target_stocks + new_target_stocks)
-            self.DataHandler.listen(target_tickers, channel_name)
+            if market_closed:
+                searcher_proc.join()
+                for proc in strategy_processes:
+                    proc.join()
+
+            else:
+                time.sleep(60)
+
 
         

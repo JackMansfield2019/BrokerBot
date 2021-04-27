@@ -7,6 +7,9 @@ import math
 import alpaca_trade_api as tradeapi
 import time  # used for calculating time
 from statistics import mean  # used to calculate avg volume
+from ENUMS import Enum
+from DataHandler import AlpacaDataHandler
+from threading import Thread
 
 class TimeFrame(Enum):
   ONE_MIN = "1Min"
@@ -36,33 +39,60 @@ class Searcher:
     """
     Columns = ['Ticker', 'Time', 'Volume']
     self.dataframe = pd.DataFrame(columns = Columns) 
-    self.stock_data = dataframe.set_index("Ticker", drop = False) 
+    self.self.stock_data = dataframe.set_index("Ticker", drop = False) 
 
     # sets the time for each stock to the time we first initialize the searcher. 
     for stock in self.stocks:
       t = int(time.time())
-      self.stock_data = self.stock_data.append( pd.Series([ stock, t], index = cols ), ignore_index = True) 
+      self.self.stock_data = self.self.stock_data.append( pd.Series([ stock, t], index = cols ), ignore_index = True) 
     """
-    self.stocks = pd.read_csv("files/Symbols.csv")
-    time = int(time.time()) 
-    stock_data = {}
-    for stock in stocks:
-      stock_data[stock] = time 
-    #self.queue = [[]] # priority queue
+    # self.stocks = pd.read_csv("../files/Symbols.csv")
+    self.stocks = ["GOOGL","FB","AMZN","MSFT","AAPL","TSLA","TSM","BABA","JPM","JNJ","WMT","BAC"]
+    time_now = int(time.time()) 
+    self.stock_data = {}
+    for stock in self.stocks:
+      self.stock_data[stock] = time 
+    self.queue = [] # priority queue
 
   def get_account(self):
     return account
+
+
+
+  def forward_stocks_from_queue(self):
+        while True:
+          if len(self.stocks) == 0:
+            time.sleep(2)
+          else:
+            for stock in self.stocks:
+    
+              if stock not in self.stock_set:
+                strat_conn = self.strat_conns[self.strat_counter]
+                strat_conn.send(stock)
+                self.stock_set.add(stock)
+                if self.strat_counter + 1 <= len(self.strat_conns)-1:
+                  self.strat_counter += 1
+                else:
+                  self.strat_counter = 0
 
   """
     Overview: updates the priority of each stock, THIS IS THE RUN METHOD OF SCREENER 
     Effects: updates the weights of the priority queue's stocks 
   """
   def search(self):
-    for stock in self.stocks:
-      time_initial = stock_data[stock] 
-      time_final, stock_volume = self.get_data(stock, time_initial, TimeFrame.FIVE_MIN) 
-      stock_data[stock] = time_final 
-      self.ACV(stock_volume, stock) 
+    forward_thread = Thread(target=self.forward_stocks_from_queue, args=())
+    forward_thread.start()
+
+
+    # for stock in self.stocks:
+    #   time_initial = self.stock_data[stock]
+    #   print(time_initial) 
+    #   time_final, stock_volume = self.get_data(stock, time_initial, TimeFrame.FIVE_MIN) 
+    #   self.stock_data[stock] = time_final 
+    #   self.ACV(stock_volume, stock) 
+
+    # for stock in self.stocks:
+    #   self.queue.append([0, stock])
 
 
   """
@@ -74,12 +104,13 @@ class Searcher:
     N.B.: Ticker Limit per API Request = 200 
   """
   def get_data(self, stock, time_initial, timeframe):
-    if time_initial < 0: raise Exception("Time Initial cannot be < 0!")
+    # if time_initial < time.localtime: raise Exception("Time Initial cannot be < 0!")
     if stock is None or stock == "": raise Exception("stock cannot be None/Null or blank!")
 
-    time_current = int(time.time())  
-    bars = int((time_current - time_initial) / 300)
-    barset = DH.get_bars(stock, time_initial, time_current, timeframe, bars)   
+    time_current = time.time()  
+    bars = int((time_current - time_initial.time()) / 300)
+    # print(f"{stock} {time_initial} {time_current} {timeframe} {bars}")
+    barset = self.DH.get_bars(stock, time_initial, time_current, "5Min", str(bars))   
     
     #assuming the previous bar from current is in the last index of barset 
     #last = len(barset) - 1 
@@ -101,6 +132,7 @@ class Searcher:
   def ACV(self, volumes, stock):
     acv = int(mean(volumes)) 
     s = [acv, stock]
+    print(s)
     length = len(self.queue) 
 
     if len(self.queue) == 0:
@@ -111,7 +143,11 @@ class Searcher:
           self.queue.insert(i, s) 
           break 
         elif s[0] < self.queue[i][0] and i == length - 1:
-          self.queue.append(s)  
+          self.queue.append(s)
+
+
+   
+              
 
 """
 # *** gets the data from the broker bot priority queue ***

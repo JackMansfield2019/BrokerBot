@@ -148,7 +148,9 @@ class AlpacaDataHandler(DataHandler):
     effects:  nothing.
     returns:  A Pandas Dataframe containing the bars data. 
     """
-    def get_bars(self, ticker: str, start_time: str, end_time: str, bar_timeframe: str, bar_limit: str):
+    def get_bars(self, ticker: str, _start_time: str, _end_time: str, bar_timeframe: str, bar_limit: str):
+        start_time = datetime.datetime.fromtimestamp(_start_time.time()).strftime('%Y-%m-%dT%H:%M:%S')
+        end_time = datetime.datetime.fromtimestamp(_end_time).strftime('%Y-%m-%dT%H:%M:%S')
         url ='https://data.alpaca.markets/v2/stocks'+'/'+ticker+'/bars?adjustment=raw'+'&start='+start_time+'&end='+end_time+'&limit='+bar_limit+'&page_token='+'&timeframe='+bar_timeframe
         r = requests.get(url, headers=self.headers)
         df = pd.read_json(json.dumps(r.json()['bars']))
@@ -176,7 +178,7 @@ class AlpacaDataHandler(DataHandler):
         listen_message = {
             "action": "listen",
             "data": {
-                "streams": [f"AM.{self.pending_tickers.pop()}", "AM.GME"]
+                "streams": [f"AM.{self.pending_tickers.pop()}"]
             }
         }
         # check pending tickers, sne initial listen message, wait for new tickers,
@@ -226,12 +228,13 @@ class AlpacaDataHandler(DataHandler):
         self.ws.run_forever()
         print("HELLO")
 
-    def listen(self, tickers, channel_name):
+    def listen(self, _tickers, channel_name):
         #
         # function that sends a listen message to alpaca for the streams inputed.
         #
-        for x in range(len(tickers)):
-            tickers[x] = channel_name + "." + tickers[x]
+        tickers = []
+        for x in range(len(_tickers)):
+            tickers.append(channel_name + "." + _tickers[x])
         print(tickers)
         listen_message = {"action": "listen", "data": {"streams": tickers}}
         self.ws.send(json.dumps(listen_message))
