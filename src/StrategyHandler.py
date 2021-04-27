@@ -35,12 +35,13 @@ class StrategyHandler:
     Returns: none
     """
 
-    def __init__(self, api_key, secret_key, base_url, socket, strategy, bb_conn):
-        self.strategy = strategy
-        self.DataHandler = AlpacaDataHandler(
-            api_key, secret_key, base_url, socket)
-        self.ExecutionHandler = AlpacaExecutionHandler(
-            api_key, secret_key, base_url)
+    def __init__(self, api_key, secret_key, base_url, socket, strategy, strat_input):
+        self.api_key = api_key
+        self.secret_key = secret_key
+        self.base_url = base_url
+        self.socket = socket
+        self.strategy_category = strategy
+        self.strategy_input = strat_input
 
         self.bb_conn = bb_conn
         self.dh_queue = None
@@ -182,15 +183,32 @@ class StrategyHandler:
     """
 
     def run(self):
-        sh_dh_queue = queue.LifoQueue()
-        sh_eh_conn, eh_sh_conn = Pipe()
+       # TODO: add logic for starting proper strategies from a given categroy
+        sample_strategies = ["strat1", "strat2", "strat3"]
+        searcher_strat_conns = []
+        # add switch statement for instantiating correct strategy class based on strat ^
+        for start in sample_strategies:
+            dh_params = [self.api_key, self.secret_key, self.base_url, self.socket]
+            st_dh = self.dh_factory.construct_dh(self.strategy_input[2], dh_params)
+            eh_params = [self.api_key, self.secret_key, self.base_url]
+            st_eh = self.eh_factory.construct_eh(self.strategy_input[3], eh_params)
+            search_strat, strat_search = Pipe()
 
-        self.set_eh_dh_conns(sh_dh_queue, sh_eh_conn)
-        # Set queue in DH
-        self.DataHandler.set_sh_queue(sh_dh_queue)
+            # replace with real class
+            self.strategies.append(Strategy(st_dh, st_eh, "None", strat_search))
+            searcher_strat_conns.append(search_strat)
 
-        dh_stream_thread = Thread(
-            target=self.DataHandler.start_streaming, args=(["TSLA"],))
+        self.searcher = Searcher(self.api_key, self.secret_key, self.base_url, self.socket, searcher_strat_conns)
+
+        searcher_proc = Process(target=self.searcher.search, args=())
+        searcher_proc.start()
+
+        strategy_processes = []
+        for strat in self.strategies:
+            strat_proc = Process(target=strat.start, args=())
+            strat_proc.start()
+            strategy_processes.append(strat_proc)            
+       
 
         dh_listen_thread = Thread(target=self.test_dh_queue, args=())
 
