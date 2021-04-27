@@ -1,8 +1,12 @@
 from abc import ABC, abstractmethod  # Abstract class module for python.
 from DataHandler import DataHandler
 from ExecutionHandler import ExecutionHandler
+from backtrader import backtrader as bt
 from threading import Thread
 from multiprocessing import Process, Pipe
+from ENUMS import *
+from Factory import *
+import time 
 import queue
 
 """
@@ -24,15 +28,18 @@ TODO:
     - Refine backtrading setup and functions.
     -
 """
-class Strategy(ABC):
+class Strategy(ABC, bt.Strategy):
     @abstractmethod
-    def __init__(self, dh: DataHandler, eh: ExecutionHandler, ticker: str):
+    def __init__(self, dh: DataHandler, eh: ExecutionHandler, ticker: str, strat_search_conn):
         self.dh = dh
         self.eh = eh
         self.ticker = ticker
         self.dh_queue = None
         self.eh_conn = None
         self.queue = []
+        self.strat_search_conn = strat_search_conn
+        self.target_stocks = []
+        self.dh_factory = DH_factory()
     @abstractmethod
     def start(self):
         
@@ -50,16 +57,65 @@ class Strategy(ABC):
         dh_stream_thread.start()
         dh_listen_thread.start()
 
+        searcher_thread = Thread(target=self.listen_for_searcher, args=())
+        searcher_thread.start()
+
+        
         # Initialize any technical indicators needed from the Lib.
+        # Start strategy, pop stock from target stocks when needed
+
+    @abstractmethod
+    def listen_for_searcher(self):
+        while True:
+            target_stock = self.strat_search_conn.recv()
+            if target_stock not in self.target_stocks:
+                self.target_stocks.append(target_stock)
+
 
     @abstractmethod
     def next(self):
         #Buy Conditional
-
-
+        #random buy thing for example.
+        if self.position.size == 0:
+            size = int(self.broker.getcash() / 1+ self.position.size)
+            self.buy(size=size)
         # Sell Conditional
         
         pass
+
+    @abstractmethod
+    def run_strat(self):
+        #just start streaming for example.
+        self.start()
+        self.ticker = self.queue[0]
+        self.pop_queue()
+
+        for i in range(0, 5): # stays on one stock for 5 minutes, before switching to next stock in priority queue 
+            self.dh.start_streaming(self.ticker)
+        
+            df_current = self.st_dh_queue.pop() 
+            df_previous = self.st_dh_queue.pop() 
+
+            previous_close = df_previous["close"]
+            previous_open = df_previous["open"]
+            previous_candle = prev_close - prev_open 
+
+            current_close = df.current["close"]
+            current_open = df.current["open"]
+            current_candle = curr_close - curr_open 
+
+            # Bullish Engulfing Buy Condition 
+            if (prev_candle < 0 and curr_candle > 0) and (curr_open =< prev_open and curr_close > prev_close):
+                signal = "BUY"
+                self.eh.start_streaming(signal) 
+
+            # Bearish Engulfing Sell Condition 
+            if (prev_candle > 0 and curr_candle < 0) and (curr_open >= prev_open and curr_close < prev_close):
+                signal = "SELL"
+                self.eh.start_streaming(signal) 
+            
+            time.sleep(60) 
+
    
     """
     Overview: sets the pipe connections
