@@ -8,19 +8,30 @@ import alpaca_trade_api as tradeapi
 import time  # used for calculating time
 from statistics import mean  # used to calculate avg volume
 
+class TimeFrame(Enum):
+  ONE_MIN = "1Min"
+  FIVE_MIN = "5Min"
+  FIFTEEN_MIN = "15Min"
+  ONE_HOUR = "1Hour"
+  ONE_DAY = "1Day"
 
 class Searcher:
-  def __init__(self, API_key_id, API_secret_key, base_url, socket, bb_conn):
+  def __init__(self, API_key_id, API_secret_key, base_url, socket, strat_conns):
     self.headers = {"APCA-API-KEY-ID": API_key_id,"APCA-API-SECRET-KEY": API_secret_key}
     self.base_url = base_url
     self.account_url= "{}/v2/account".format(self.base_url)
     self.order_url = "{}/v2/orders".format(self.base_url)
-    self.queue = bb_conn # priority queue 
-    self.api = tradeapi.REST( self.headers["APCA-API-KEY-ID"], self.headers["APCA-API-SECRET-KEY"], base_url )
+    self.strat_conns = strat_conns
+    self.strat_counter = 0
+    self.stock_set = set()
+    self.api = tradeapi.REST(
+                          self.headers["APCA-API-KEY-ID"],
+                          self.headers["APCA-API-SECRET-KEY"],
+                          base_url
+          )
     # self.api_account = api.get_account()
     self.socket = socket
-    #self.stocks = pd.read_csv('S&P500-Symbols.csv')
-    self.stocks = pd.read_csv('symbols.csv') 
+
     """
     Columns = ['Ticker', 'Time', 'Volume']
     self.dataframe = pd.DataFrame(columns = Columns) 
@@ -31,7 +42,7 @@ class Searcher:
       t = int(time.time())
       self.stock_data = self.stock_data.append( pd.Series([ stock, t], index = cols ), ignore_index = True) 
     """
-    self.stocks = pd.read_csv('S&P500-Symbols.csv')
+    self.stocks = pd.read_csv("files/Symbols.csv")
     time = int(time.time()) 
     stock_data = {}
     for stock in stocks:
@@ -77,7 +88,7 @@ class Searcher:
       stock_close.append(barset[i][5])
     return stock_time, stock_volume 
   
-  
+
   """
     Overview: calculates the average change in volume 
     Requires: volumes is not None
