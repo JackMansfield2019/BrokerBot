@@ -92,33 +92,51 @@ class Strategy(ABC, bt.Strategy):
 
         for i in range(0, 5): # stays on one stock for 5 minutes, before switching to next stock in priority queue 
             self.dh.start_streaming(self.ticker)
-        
-            df_current = self.st_dh_queue.pop() 
-            df_previous = self.st_dh_queue.pop() 
+            previous_time = int(time.time() - 60)
+            current_time = int(time.time())
+            df_price = self.df.get_bars(ticker, previous_time, current_time, "1Min", "2")
 
-            previous_close = df_previous["close"]
-            previous_open = df_previous["open"]
-            previous_candle = prev_close - prev_open 
+            #df_current = self.st_dh_queue.pop() 
+            #df_previous = self.st_dh_queue.pop() 
 
-            current_close = df.current["close"]
-            current_open = df.current["open"]
-            current_candle = curr_close - curr_open 
+            #previous_close = df_previous["close"]
+            #previous_open = df_previous["open"]
+            previous_close = df_price.iloc[1, 4]
+            previous_open = df_price.iloc[1, 1]
+            previous_candle = previous_close - previous_open 
+
+            #current_close = df.current["close"]
+            #current_open = df.current["open"]
+            current_close = df_price.iloc[0, 4]
+            current_open = df_price.iloc[0, 1] 
+            current_candle = current_close - current_open 
 
             # Bullish Engulfing Buy Condition 
-            if (prev_candle < 0 and curr_candle > 0) and (curr_open =< prev_open and curr_close > prev_close):
+            if (previous_candle < 0 and current_candle > 0) and (current_open =< previous_open and current_close > previous_close):
                 signal = 'buy'
                 #self.eh.start_streaming(signal) 
                 #money_alloc = self.eh.money_alloc_pre(0.0025, 15) 
                 self.eh.create_order(self.ticker, 5, signal, 'market', 'gtc') 
 
             # Bearish Engulfing Sell Condition 
-            if (prev_candle > 0 and curr_candle < 0) and (curr_open >= prev_open and curr_close < prev_close):
+            if (previous_candle > 0 and current_candle < 0) and (current_open >= previous_open and current_close < previous_close):
                 signal = 'sell'
                 #self.eh.start_streaming(signal) 
                 self.eh.create_order(self.ticker, 5, signal, 'market', 'gtc')
 
-            time.sleep(60) 
+            #time.sleep(60)
+            #next_time = current_time + 60
+            #next_time = round(current_time + 60, 0) 
+            next_time = current_time + 60 
+            while time.time() < next_time:
+                #time.sleep(1) 
 
+            """    
+            if time.time() = next_time:
+                continue 
+            else:
+                time.sleep(1) 
+            """ 
    
     """
     Overview: sets the pipe connections
