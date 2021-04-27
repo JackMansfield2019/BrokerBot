@@ -106,14 +106,17 @@ class Strategy(ABC, bt.Strategy):
 
             # Bullish Engulfing Buy Condition 
             if (prev_candle < 0 and curr_candle > 0) and (curr_open =< prev_open and curr_close > prev_close):
-                signal = "BUY"
-                self.eh.start_streaming(signal) 
+                signal = 'buy'
+                #self.eh.start_streaming(signal) 
+                #money_alloc = self.eh.money_alloc_pre(0.0025, 15) 
+                self.eh.create_order(self.ticker, 5, signal, 'market', 'gtc') 
 
             # Bearish Engulfing Sell Condition 
             if (prev_candle > 0 and curr_candle < 0) and (curr_open >= prev_open and curr_close < prev_close):
-                signal = "SELL"
-                self.eh.start_streaming(signal) 
-            
+                signal = 'sell'
+                #self.eh.start_streaming(signal) 
+                self.eh.create_order(self.ticker, 5, signal, 'market', 'gtc')
+
             time.sleep(60) 
 
    
