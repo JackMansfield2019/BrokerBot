@@ -6,14 +6,26 @@ import alpaca_trade_api as tradeapi
 from dataclasses import dataclass  # Python structs module.
 import pandas as pd  # For data storage and analysis.
 import ast, datetime # For on_message data handling
-"""
-overview:
-    - DataHandler Class: DataHandler is a class that takes in data from a given brokerage API,
-      and sends it through to the StrategyHandler in a format that it can natively understand.
-      in short, it is responsible for data transfer and formatting.
+#==================================================================================================================
 
-    - Standard Data Format (BBFrame): BBFrame is the standard data format used in the BrokerBot
-      project. it consists of a Pandas dataframe in the following configuration:
+class DataHandler(ABC):
+    """
+    Class: DataHandler
+
+    .............................................................................................................
+
+    Overview
+    --------
+    A class that takes in data from a given brokerage API, and sends it through to the Strategy Handler in a format that it can natively understand.
+    In short, it is responsible for data transfer and formatting.
+
+    .............................................................................................................
+
+    Standard Data Fromat (BBFrame)
+    ------------------------------
+    BBFrame is the standard data format used in the BrokerBot project.
+
+        It consists of a Pandas dataframe in the following configuration:
             ================================================================
             |      |  Time  |  Open  |  High  |  Low  |  Close  |  Volume  | <- Labelled columns
             |  01  | string |  float |  float | float |  float  |   float  | 
@@ -22,58 +34,57 @@ overview:
                ^^
                auto-numbered rows (see pandas Dataframe for more info.)
 
-TODO: 
-    - More concretely define abstract methods for base class.
-    - Support more API subclasses.
-    -  
-"""
-
-
-class DataHandler(ABC):
-    # ==================== Creators ====================
-
-    # ==================== Observers ===================
-    """
-    requires: nothing.
-    modifies: nothing.
-    effects:  nothing.
-    returns:  an account object for the API.
+    .............................................................................................................
     """
     @abstractmethod
     def get_account(self):
+        '''
+        *** Missing Overview ***
+
+            Returns:
+                account object for the API
+        '''
         pass
-    """
-    requires: nothing.
-    modifies: nothing.
-    effects:  nothing.
-    returns:  the socket object for the API.
-    """
+    #--------------------------------------------------------------------------------------------------------------
+
     @abstractmethod
     def get_socket(self):
+        '''
+        *** Missing Overview ***
+
+            Returns: 
+                the socket object for the API
+        '''
         pass
 
 # ==================== Producers ===================
 
-    """
-    requires: ticker for given stock, start time for bar data, end time of bar data, and length of bar.
-    modifies: nothing.
-    effects:  nothing.
-    returns:  a Pandas Dataframe containing the bars data in BrokerBot Standard Format (BBFrame).
-    """
     @abstractmethod
-    def get_bars(self, tickers, bar_timeframe, num_of_bars):
+    def get_bars(self, ticker, bar_timeframe, num_of_bars):
+        '''
+        *** Missing Overview ***
+
+            Parameters:
+                ticker (str): ticker of a stock 
+                start_time (time object): N/A
+                bar_timeframe (time object OR str): time of bar data 
+                num_of_bars (int): length of bar 
+            
+            Returns:
+                Pandas DataFrame containing the bars data in BrokerBot Standard Format (BBFrame). 
+        '''
         pass
 
-
 # ==================== Mutators ====================
-    """
-    requires: The new account to set this one to.
-    modifies: The current account object, replacing it with the argument account.
-    effects:  nothing.
-    returns:  nothing.
-    """
+
     @abstractmethod
     def set_account(self, account):
+        '''
+        *** Missing Overview ***
+
+            Parameters:
+                account (...): new account to set this one to
+        '''
         pass
 
 
@@ -102,9 +113,96 @@ class DataHandler(ABC):
     @abstractmethod
     def unlisten(self):
         pass
-
+#==================================================================================================================
 
 class AlpacaDataHandler(DataHandler):
+    """
+    Class: AlpacaDataHandler extends DataHandler 
+
+    .............................................................................................................
+
+    Overview
+    --------
+    A class that takes in data from the Alpaca API, and sends it through to the Strategy Handler in a format that it can natively understand.
+    In short, it is responsible for data transfer and formatting from the Alpaca API. 
+
+    .............................................................................................................
+    
+    Attributes
+    ----------
+    api_key : int
+        ***
+    secret_key : int
+        ***
+    base_url : str
+        ***
+    socket : str
+        ***
+
+    .............................................................................................................
+
+    Methods
+    -------
+    set_sh_queue(q):
+        *** Missing Overview ***
+    
+    get_account:
+        *** Missing Overview ***
+
+    set_account(account):
+        *** Missing Overview ***
+
+    get_socket:
+        *** Missing Overview ***
+    
+    get_bars(ticker: str, _start_time: str, _end_time: str, bar_timeframe: str, bar_limit: str):
+        *** Missing Overview ***
+    
+    on_open(ws):
+        *** Missing Overview ***
+    
+    on_message(ws, message):
+        *** Missing Overview ***
+    
+    on_close(ws):
+        *** Missing Overview ***
+    
+    on_error(ws, error):
+        *** Missing Overview ***
+    
+    start_streaming(tickers):
+        *** Missing Overview ***
+    
+    listen(_tickers, channel_name):
+        *** Missing Overview ***
+
+    unlisten(ticker, channel_name):
+        *** Missing Overview ***
+    
+    .............................................................................................................
+
+    Standard Data Fromat (BBFrame)
+    ------------------------------
+    BBFrame is the standard data format used in the BrokerBot project.
+
+        It consists of a Pandas dataframe in the following configuration:
+            ================================================================
+            |      |  Time  |  Open  |  High  |  Low  |  Close  |  Volume  | <- Labelled columns
+            |  01  | string |  float |  float | float |  float  |   float  | 
+            |  02  | string |  float |  float | float |  float  |   float  | 
+            ================================================================
+               ^^
+               auto-numbered rows (see pandas Dataframe for more info.)
+
+    .............................................................................................................
+
+    Pending Tasks
+    -------------
+    1. More concretely define abstract methods for base class
+    2. Support more API subclasses
+
+    .............................................................................................................
+    """
     def __init__(self,
                  api_key,
                  secret_key,
@@ -126,6 +224,7 @@ class AlpacaDataHandler(DataHandler):
         self.socket = socket
         self.pending_tickers = []
         self.sh_queue = None
+    #--------------------------------------------------------------------------------------------------------------
 
     def set_sh_queue(self, q):
         self.sh_queue = q
@@ -139,16 +238,27 @@ class AlpacaDataHandler(DataHandler):
     def get_socket(self):
         return self.ws
 
-
-    """
-    requires: Strings for the ticker, start and end time in RFC-3339 format(e.g. 2021-03-11T00:00:00-05:00), 
-              timeframe (currently only '1Day', '1Hour', and '1Min'), 
-              and bar_limit, which limits the number of bars returned within that timeframe.
-    modifies: nothing.
-    effects:  nothing.
-    returns:  A Pandas Dataframe containing the bars data. 
-    """
     def get_bars(self, ticker: str, _start_time: str, _end_time: str, bar_timeframe: str, bar_limit: str):
+        '''
+        *** Missing Overview ***
+
+            Parameters: 
+                ticker (str): ticker of a stock
+
+                _start_time (str): the initial time we are looking for data of a stock
+                    NOTE: time format is in RFC-3339 format (e.g., 2021-03-11T00:00:00-05:00)
+
+                _end_time (str): the ending time of we are looking for data of a stock
+                    NOTE: time format is in RFC-3339 format (e.g., 2021-03-11T00:00:00-05:00) 
+
+                bar_timeframe: time frame of the data 
+                    NOTE: currently only 1Day, 1Hour, and 1Min timeframes are available 
+
+                bar_limit (str): the number of bars returned within the timeframe 
+            
+            Returns:
+                Pandas DataFrame: contains the bars data 
+        '''
         start_time = datetime.datetime.fromtimestamp(_start_time.time()).strftime('%Y-%m-%dT%H:%M:%S')
         end_time = datetime.datetime.fromtimestamp(_end_time).strftime('%Y-%m-%dT%H:%M:%S')
         url ='https://data.alpaca.markets/v2/stocks'+'/'+ticker+'/bars?adjustment=raw'+'&start='+start_time+'&end='+end_time+'&limit='+bar_limit+'&page_token='+'&timeframe='+bar_timeframe
@@ -158,13 +268,18 @@ class AlpacaDataHandler(DataHandler):
         df.columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Open Interest']
         print(df)
         return df
+    #--------------------------------------------------------------------------------------------------------------
 
-    # Socket Functions
+    #============================================== SOCKET FUNCTIONS ================================================
 
     def on_open(self, ws):
-        print("on open")
+        '''
+        The function is called whenever a websocket is opened, and it authenticates with alpaca 
 
-        # function called whenever a websocket is opened, authenticates with alpaca
+            Parameters:
+                ws (str): websocket
+        '''
+        print("on open")
 
         auth_data = {
             "action": "authenticate",
@@ -183,15 +298,16 @@ class AlpacaDataHandler(DataHandler):
         }
         # check pending tickers, sne initial listen message, wait for new tickers,
         ws.send(json.dumps(listen_message))
-
-    """
-    requires: Reference to the WebSocketApp and the message that was receieved.
-    modifies: nothing.
-    effects:  Sends a DataFrame to SH via the pipe.
-    returns:  nothing.
-    """
+    #--------------------------------------------------------------------------------------------------------------
 
     def on_message(self, ws, message):
+        '''
+        *** Missing Overview ***
+
+            Parameters:
+                ws (str): reference to WebSocketApp 
+                message (str): message that was received 
+        '''
         print("received a message")
         print(message)
         # convert message to dictionary
@@ -208,14 +324,36 @@ class AlpacaDataHandler(DataHandler):
             data = [[timestamp, op, high, low, cl, vol]]
             df = pd.DataFrame(data, columns=["Time", "Open", "High", "Low", "Close", "Volume"])
             self.sh_queue.put(df)
+    #--------------------------------------------------------------------------------------------------------------
 
     def on_close(self, ws):
+        '''
+        *** Missing Overview ***
+
+            Parameters: 
+                ws (str): *** Missing Description ***
+        '''
         print("closed connection")
+    #--------------------------------------------------------------------------------------------------------------
 
     def on_error(self, ws, error):
+         '''
+        *** Missing Overview ***
+
+            Parameters: 
+                ws (str): *** Missing Description ***
+                error (str): *** Missing Description ***
+        '''
         print(error)
+    #--------------------------------------------------------------------------------------------------------------
 
     def start_streaming(self, tickers):
+         '''
+        *** Missing Overview ***
+
+            Parameters: 
+                tickers (str): *** Missing Description ***
+        '''
         self.pending_tickers += tickers
         print(self.socket)
         self.ws = websocket.WebSocketApp(
@@ -227,11 +365,16 @@ class AlpacaDataHandler(DataHandler):
 
         self.ws.run_forever()
         print("HELLO")
+    #--------------------------------------------------------------------------------------------------------------
 
     def listen(self, _tickers, channel_name):
-        #
-        # function that sends a listen message to alpaca for the streams inputed.
-        #
+        '''
+        The function that sends a listen message to alpaca for the streams inputted.
+
+            Parameters:
+                _tickers (str): *** Missing Description ***
+                channel_name (str): *** Missing Description *** 
+        '''
         tickers = []
         for x in range(len(_tickers)):
             tickers.append(channel_name + "." + _tickers[x])
@@ -239,13 +382,20 @@ class AlpacaDataHandler(DataHandler):
         listen_message = {"action": "listen", "data": {"streams": tickers}}
         self.ws.send(json.dumps(listen_message))
         #self.stream_conn.run(quote_callback, tickers)
+    #--------------------------------------------------------------------------------------------------------------
 
     def unlisten(self, ticker, channel_name):
-        #
-        # function that unlistens for the streams inputed.
-        #     might need error checking if a stream that is not currently being listened to is asked to be unlistened.
-        #
+        '''
+        The function that unlistens for the streams inputted. 
+        NOTE: Might need error checking if a stream that is not currently being listened to is asked to be unlistened. 
+
+            Parameters:
+                ticker (str): *** Missing Description ***
+                channel_name (str): *** Missing Description *** 
+        '''
         for x in range(ticker):
             ticker[x] = channel_name + ticker[x]
         unlisten_message = {"action": "unlisten", "data": {"streams": ticker}}
         self.ws.send(json.dumps(unlisten_message))
+    #--------------------------------------------------------------------------------------------------------------
+#==================================================================================================================

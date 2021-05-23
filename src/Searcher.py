@@ -10,6 +10,7 @@ from statistics import mean  # used to calculate avg volume
 from ENUMS import Enum
 from DataHandler import AlpacaDataHandler
 from threading import Thread
+#==================================================================================================================
 
 class TimeFrame(Enum):
   ONE_MIN = "1Min"
@@ -17,6 +18,7 @@ class TimeFrame(Enum):
   FIFTEEN_MIN = "15Min"
   ONE_HOUR = "1Hour"
   ONE_DAY = "1Day"
+#==================================================================================================================
 
 class Searcher:
   def __init__(self, API_key_id, API_secret_key, base_url, socket, strat_conns):
@@ -53,11 +55,11 @@ class Searcher:
     for stock in self.stocks:
       self.stock_data[stock] = time 
     self.queue = [] # priority queue
+  #--------------------------------------------------------------------------------------------------------------
 
   def get_account(self):
     return account
-
-
+  #--------------------------------------------------------------------------------------------------------------
 
   def forward_stocks_from_queue(self):
         while True:
@@ -74,12 +76,12 @@ class Searcher:
                   self.strat_counter += 1
                 else:
                   self.strat_counter = 0
+  #--------------------------------------------------------------------------------------------------------------
 
-  """
-    Overview: updates the priority of each stock, THIS IS THE RUN METHOD OF SCREENER 
-    Effects: updates the weights of the priority queue's stocks 
-  """
   def search(self):
+    '''
+    Updates the priority of each stock
+    '''
     forward_thread = Thread(target=self.forward_stocks_from_queue, args=())
     forward_thread.start()
 
@@ -93,17 +95,27 @@ class Searcher:
 
     # for stock in self.stocks:
     #   self.queue.append([0, stock])
+  #--------------------------------------------------------------------------------------------------------------
 
-
-  """
-    Overview: returns the previous 5-minute-volume for the given stock by the client 
-    Returns: volume of the stock that was passed in
-    Throws:
-      - Exception if time_initial < 0 
-      - Exception if stock is None/Null 
-    N.B.: Ticker Limit per API Request = 200 
-  """
   def get_data(self, stock, time_initial, timeframe):
+    '''
+    Returns the previous 5-minute-volume for the given stock by the client
+
+      Parameters:
+        stock (str): a security from any type of market 
+        time_initial (time object): the previous time the stock was looked at 
+        timeframe (str): the timeframe of data retrieved from the data handler 
+      
+      Returns:
+        stock_time (time object): the time when the stock was looked at after the method call
+        stock_volume (float): volume of the stock from the parameter 
+      
+      Throws:
+        Exception if time_initial < 0
+        Exception if stock is None
+      
+      N.B.: Ticker Limit per API Request = 200 
+    '''
     # if time_initial < time.localtime: raise Exception("Time Initial cannot be < 0!")
     if stock is None or stock == "": raise Exception("stock cannot be None/Null or blank!")
 
@@ -122,14 +134,16 @@ class Searcher:
     for i in range(0, row_count):
       stock_close.append(barset.iloc[i, 5])
     return stock_time, stock_volume 
+  #--------------------------------------------------------------------------------------------------------------
   
-
-  """
-    Overview: calculates the average change in volume 
-    Requires: volumes is not None
-    Returns: updated priorities of each stock in stocks list  
-  """
   def ACV(self, volumes, stock):
+    '''
+    Calculates the average change in volume, and updates them into the queue 
+      
+      Parameters:
+        volumes (list of floats): volumes of a stock !!(must not be none)!!
+        stock (str): a stock 
+    '''
     acv = int(mean(volumes)) 
     s = [acv, stock]
     print(s)
@@ -144,10 +158,7 @@ class Searcher:
           break 
         elif s[0] < self.queue[i][0] and i == length - 1:
           self.queue.append(s)
-
-
-   
-              
+  #--------------------------------------------------------------------------------------------------------------
 
 """
 # *** gets the data from the broker bot priority queue ***
@@ -189,3 +200,4 @@ class Searcher:
   ws = websocket.WebSocketApp(socket, on_open=on_open, on_message=on_message, on_close=on_close)
   ws.run_forever()
 """
+#==================================================================================================================
