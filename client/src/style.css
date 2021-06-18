@@ -1,0 +1,307 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300&display=swap');
+
+body {
+    margin: 0;
+    /*font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;*/
+    font-family: 'Titillium Web';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  input, button{
+    font-family: 'Titillium Web';
+  }
+  
+  code {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+      monospace;
+  }
+/*---------------------------------------------------------------------------------*/
+/*                                    General CSS                                  */
+/*---------------------------------------------------------------------------------*/
+  .center {
+  justify-content: center;
+  align-content: center;
+  align-items: center;
+  }
+
+  .center-text {
+  text-align: center;
+  vertical-align: middle;
+  }
+
+  .page-wrapper {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+/*---------------------------------------------------------------------------------*/
+/*                                 Login Page CSS                                  */
+/*---------------------------------------------------------------------------------*/
+
+  .login-page-wrapper {
+    position: relative;
+    width: 135%;
+    height: 100%;
+    display: flex;
+    flex-flow: row;
+    transition: all 0.3s ease;
+    overflow-x: hidden; 
+  }
+
+  .register-wrapper {
+    width: 35%;
+    height: 100%;
+    background: #DE8B57;
+    /*background: #;*/
+  }
+
+
+  .login-content-wrapper {
+    width: 65%;
+    max-width: 60%;
+    height: 100%;
+    background: #ffffff;
+    display: flex;
+    flex-flow: column;
+  }
+  .login-wrapper {
+    width: 35%;
+    height: 100%;
+    background: #669EC5;
+    display: flex;
+    flex-flow: column;
+    /*background: #0089FA;*/
+  }
+
+  .login-content-header {
+    width: 100%;
+    height: 100px;
+    display: flex;
+    padding-bottom: 12%;
+  }
+
+  .login-content-header img{
+    height: 40px;
+  }
+
+  .login-content-img-wrapper {
+    width: 100%;
+    height: auto;
+    display: flex;
+    padding-bottom: 20px;
+  }
+
+  .login-content-img-wrapper img {
+    height: auto; /* 45vh */
+  }
+  .login-content-text-wrapper {
+    width: 80%;
+    height: auto;
+    display: flex;
+    flex-flow: column;
+    text-align: center;
+  }
+
+  .login-context-title {
+    display: flex;
+    /*color: #0089FA;*/
+    color: #669EC5;
+    font-size: 24px;
+    padding-bottom: 5px;
+  }
+
+  .login-context-subtitle {
+    display: flex;
+    flex: 1;
+
+    font-size: 18px;
+  }
+  .login-content-footer {
+    flex: 1;
+    width: 100%;
+  }
+
+  .login-header{
+    width: 100%;
+    height: 50px;
+    display: flex;
+    padding-bottom: 20%;
+    justify-content: space-between;
+    padding-top: 10px;
+  }
+
+  .login-header-btn {
+    width: auto;
+    height: 50px;
+    display: flex;
+    padding: 0px 10px 0px 10px; /*Top Right Bottom Left*/
+  }
+
+  .login-header-btn button{
+    width: auto;
+    height: 34px;
+    display: flex;
+    border-radius: 17px;
+    border: solid 1.5px #ffffff;
+    background: none;
+    color: #ffffff;
+    padding: 5px 15px 5px 15px;
+  }
+
+  .login-page-form-title-wrapper{
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-flow: column;
+    padding: 10px 0px 20px 0px; /*Top Right Bottom Left*/
+  }
+
+ .login-page-form-title{
+    display: flex;
+    /*color: #0089FA;*/
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 24px;
+    height: 50%;
+ }
+
+ .login-page-form-subtitle {
+    display: flex;
+    flex: 1;
+    color: #ffffff;
+    font-size: 18px;
+ }
+
+  .login-body{
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-flow: column;
+  }
+
+  .login-footer{
+    flex: 1;
+  }
+
+  .login-page-input-wrapper {
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-flow: column;
+    justify-content: center;
+    align-items: center;
+    padding-bottom: 20px;
+  
+  }
+
+  .login-page-text-input-title {
+    width: 66%;
+    height: auto;
+    color: #ffffff;
+
+  }
+
+  .login-page-text-input-wrapper {
+    width: 66%;
+    height: auto;
+    display: flex;
+    flex-flow: column;
+    justify-content: center;
+  }
+
+  .login-page-text-input-wrapper input {
+    width: 100%;
+    height: 30px;
+    border-radius: 5px;
+    border: none;
+    color: #ffffff;
+    font-size: 16px;
+    padding-left: 40px;
+  }
+
+  .login-page-text-input-wrapper input:focus {
+    outline: none;
+    
+  }
+ 
+  .login-submit-btn-wrapper {
+    width: 100%;
+    height: 80px;
+    display: flex;
+    
+  }
+
+  .login-submit-btn-wrapper button {
+    width: 66%;
+    height: 40px;
+    border-radius: 20px;
+    border: none;
+    background: #DE8B57;
+    color: #ffffff;
+    font-size: 18px;
+  }
+
+  .register-submit-btn-wrapper {
+    width: 100%;
+    height: 80px;
+    display: flex;
+    
+  }
+
+  .register-submit-btn-wrapper button {
+    width: 66%;
+    height: 40px;
+    border-radius: 20px;
+    border: none;
+    background: #669EC5;
+    color: #ffffff;
+    font-size: 18px;
+  }
+
+  .forgot-password {
+    padding-top: 5px;
+    padding-left: 40px ;
+    color: #ffffff;
+    width: 75%;
+    text-align: right;
+  }
+  .forgot-password button {
+    color: #ffffff;
+    font-size: 14px;
+    background: none;
+    border: none;
+  }
+  .forgot-password button:hover {
+    text-decoration: underline;
+  }
+
+  .testing {
+    padding-left: 10px;
+    position: absolute;
+    padding-top: 6px;
+    pointer-events: none;
+  }
+
+  .icons-wrapper {
+    width: 100%;
+    height: 50px;
+    display: flex;
+    padding-top: 40px;
+  }
+  .icons-container {
+    width: 66%;
+    height: auto;
+    display: flex;
+    flex-flow: row;
+    justify-content: center;
+
+  }
+  .icons-container img {
+    width: 60px;
+  }
