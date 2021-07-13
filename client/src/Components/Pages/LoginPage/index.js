@@ -44,11 +44,11 @@ class LoginPage extends React.Component {
   }
 
   componentDidMount(){
-    console.log(this.props.userData);
+    //console.log(this.props.userData);
   }
 
   componentDidUpdate(prevProps){
-     console.log(this.props.userData);
+     //console.log(this.props.userData);
   }
 
   /**
@@ -99,17 +99,18 @@ class LoginPage extends React.Component {
     */
   loginSubmitClicked = event => {
     /*Check to see if Valid before prevent default*/
-    var AlertValue = `Email:  ${this.state.email}\nPassword: ${this.state.password}`;
-    alert(AlertValue);
+    //var AlertValue = `Email:  ${this.state.email}\nPassword: ${this.state.password}`;
+    //alert(AlertValue);
 
     if(this.state.password === "TESTING"){
       this.props.dispatch(userLogin({
         ID: 1,
         email: this.state.email,
       }));
-    }
-    //console.log(event);
+    }  else {
+
     event.preventDefault();
+    }
   }
 
   /**
@@ -119,8 +120,8 @@ class LoginPage extends React.Component {
    * @param  {[event]} e the event holding the form that was submitted and its relevant data
    */
   registerSubmitClicked = event => {
-    var AlertValue = `Email:  ${this.state.email}\nPassword: ${this.state.password}\nConfirm Password: ${this.state.confirmPassword}`;
-    alert(AlertValue);
+    //var AlertValue = `Email:  ${this.state.email}\nPassword: ${this.state.password}\nConfirm Password: ${this.state.confirmPassword}`;
+    ///alert(AlertValue);
     event.preventDefault();
   }
 

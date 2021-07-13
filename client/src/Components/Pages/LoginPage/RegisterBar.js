@@ -50,7 +50,7 @@ export default function RegisterBar(props) {
                     <div className="icons-wrapper center">
                       <div className="icons-container">
                         {props.Variables.Icons.map((item) => { 
-                            return  <a href={item.url}>
+                            return  <a key={++CURRENT_ID} href={item.url}>
                                         <img key={++CURRENT_ID} alt="" src={item.img} />
                                     </a>;
                         })}

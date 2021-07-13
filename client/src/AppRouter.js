@@ -17,7 +17,6 @@ class AppRouter extends React.Component {
           <Switch> 
             {/*  ------------------  Public Routes Below ------------------- */}
             <PublicRoute component={LoginPage} path={'/'} exact />
-
             {/*  ------------------  Private Routes Below ------------------ */}
             <PrivateRoute component={HomePage} path={'/Home'} exact />
           </Switch>

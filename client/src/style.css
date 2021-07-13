@@ -40,6 +40,14 @@ body {
     overflow: hidden;
   }
 
+
+  .flex-wrapper {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    flex-flow: column;
+  }
+
 /*---------------------------------------------------------------------------------*/
 /*                                 Login Page CSS                                  */
 /*---------------------------------------------------------------------------------*/
@@ -305,3 +313,81 @@ body {
   .icons-container img {
     width: 60px;
   }
+
+/*---------------------------------------------------------------------------------*/
+/*                                    Header CSS                                   */
+/*---------------------------------------------------------------------------------*/
+  .header-wrapper {
+    height: 40px;
+    width: 100%;
+    display: flex;
+    flex-flow: row;
+    background: #303030;
+    /*box-shadow: rgba(0, 0, 0, 0.1) 0px 20px 25px -5px, rgba(0, 0, 0, 0.04) 0px 10px 20px -5px;*/
+    /*box-shadow: rgba(0, 0, 0, 0.4) 0px 2px,
+                  rgba(0, 0, 0, 0.3) 0px 4px,
+                  rgba(0, 0, 0, 0.2) 0px 6px,
+                  rgba(0, 0, 0, 0.1) 0px 8px,
+                  rgba(0, 0, 0, 0.05) 0px 10px;*/
+  }
+
+  .header-img-wrapper {
+    height: 100%;
+    width: 150px;
+    display: flex;
+  }
+
+  .header-img-wrapper img {
+    height: 40%;
+  }
+
+  
+
+  .header-rest-wrapper {
+    height: 100%;
+    display: flex;
+    flex: 1 0;
+  }
+  
+  .header-btn-wrapper {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    font-size: 16px;
+    color: #ffffff;
+  }
+
+/*---------------------------------------------------------------------------------*/
+/*                                 Page Content CSS                                */
+/*---------------------------------------------------------------------------------*/
+  .page-content-wrapper {
+    width: 100%;
+    display: flex;
+    flex: 1 0 auto;
+    flex-flow: column;
+  }
+
+  .page-content-top-box-wrapper {
+    height: 60%;
+    width: 100%;
+    background: #ff9898;
+    /*overflow: hidden;*/
+  }
+
+  .page-content-bottom-box-wrapper {
+    height: 40%;
+    width: 100%;
+    background: #98ffdd;
+  }
+
+  .page-footer-wrapper {
+    display: flex;
+    height: 20px;
+    width: 100%;
+    background:  #303030;
+  }
+
+  #chart {
+    width: 100%;
+    height: 50%;
+}
