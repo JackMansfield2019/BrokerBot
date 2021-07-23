@@ -10,12 +10,11 @@ def login(request):
             data = json.loads(request.body)
             user = data["username"]
             password = data["password"]
-        found = False
-        #TODO: look for it in the database
-        if (found):
-            return JsonResponse({'username': user, 'isAuthenticated': True})
-        else:
-            return JsonResponse({'isAuthenticated': False})
+            found = False
+            #TODO: look for it in the database
+            if (found):
+                return JsonResponse({'username': user, 'isAuthenticated': True})
+        return JsonResponse({'isAuthenticated': False})
     else:
         return HttpResponse("404: Route not available")
 
