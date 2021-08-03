@@ -1,8 +1,12 @@
 from DButil import DatabaseUtil
+import json
+
+with open("config.json", "r") as file:
+    config = json.load(file)
 
 
-class DBManager(object):
-    def __init__(self, config):
+class Users(object):
+    def __init__(self):
         self.db = DatabaseUtil(config["Database"])
         self.user_fields = [("id", "SERIAL PRIMARY KEY"), ("username_", "VARCHAR(225)"),
                             ("password_", "VARCHAR(225)")]
@@ -35,4 +39,11 @@ class DBManager(object):
             return users
 
 
+class Bots(object):
+    def __init__(self):
+        self.db = DatabaseUtil(config["Database"])
+        self.bot_fields = [("bot_id", "bigint PRIMARY KEY"), ("user_id", "bigint"),
+                           ("alpaca_key", "VARCHAR(225)")]
 
+    def set_up_db(self):
+        self.db.create_table("BrokerBot_configuration_Bots", self.bot_fields)
