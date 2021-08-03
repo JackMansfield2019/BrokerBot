@@ -16,16 +16,22 @@ class Users(object):
 
     def insert_data_for_Users(self, username, password):
         repeat = self.find_user(username, password)
-        if repeat != 0:
+        if len(repeat) != 0:
             print("Username or password already exists.")
+            return 1, 0
         else:
-            qry = """insert into
-                    BrokerBot_configuration_Users(username_, password_)
-                    values('%s', '%s')""" % (username, password)
-            cur = self.db.get_cur()
-            cur.execute(qry)
-            self.db.commit()
-            print("%s added" % username)
+            try:
+                qry = """insert into
+                        BrokerBot_configuration_Users(username_, password_)
+                        values('%s', '%s')""" % (username, password)
+                cur = self.db.get_cur()
+                cur.execute(qry)
+                self.db.commit()
+                print("%s added" % username)
+                return 0, 1
+            except:
+                return 0, 0
+
 
     def find_user(self, username, password):
         qry = """select * from BrokerBot_configuration_Users where 
@@ -33,10 +39,7 @@ class Users(object):
         cur = self.db.get_cur()
         cur.execute(qry)
         users = cur.fetchall()
-        if len(users) == 0:
-            return 0
-        else:
-            return users
+        return users
 
 
 class Bots(object):

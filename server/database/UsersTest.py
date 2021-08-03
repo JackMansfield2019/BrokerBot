@@ -1,9 +1,8 @@
 import json
-from DBmanager import *
+from DBmanager import Users
 
 
 user_db = Users()
-bot_db = Bots()
 
 
 def set_up_users():
@@ -17,10 +16,3 @@ def insert_user(username, password):
 def find_user(username, password):
     user = user_db.find_user(username, password)
     print(user)
-
-
-def set_up_bots():
-    bot_db.set_up_db()
-
-
-set_up_bots()

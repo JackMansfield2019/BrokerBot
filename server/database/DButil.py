@@ -1,5 +1,19 @@
 import psycopg2
 
+'''
+Set up of config file:
+{
+  "Database": {
+    "host": "localhost",
+    "user": "postgres",
+    "password": "my password",
+    "db": "postgres",
+    "port": "5432",
+    "schema": "bb_test"
+  }
+}
+
+'''
 
 class DatabaseUtil(object):
     def __init__(self, config):
