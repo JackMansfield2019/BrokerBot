@@ -32,7 +32,6 @@ class Users(object):
             except:
                 return 0, 0
 
-
     def find_user(self, username, password):
         qry = """select * from BrokerBot_configuration_Users where 
         username_ = '%s' and password_ = '%s'""" % (username, password)
@@ -50,3 +49,19 @@ class Bots(object):
 
     def set_up_db(self):
         self.db.create_table("BrokerBot_configuration_Bots", self.bot_fields)
+
+    def insert_data_for_Bots(self, bot_id, user_id, key):
+        qry = """insert int BrokerBot_configuration_Bots(bot_id, user_id, alpaca_key)
+        values('%s', '%s', '%s')""" % (bot_id, user_id, key)
+        cur = self.db.get_cur()
+        cur.execute(qry)
+        self.db.commit()
+        print("Bot %s added\n" % bot_id)
+
+    def find_bots(self, user_ID):
+        qry = """select * from BrokerBot_configuration_Bots where user_id = '%s'""" % user_ID
+        cur = self.db.get_cur()
+        cur.execute(qry)
+        bot = cur.fetchall()
+        return bot
+
