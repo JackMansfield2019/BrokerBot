@@ -3,7 +3,7 @@ from django.http.response import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
 from passlib.hash import pbkdf2_sha256
-from server.database.UsersTest import *
+from database.UsersTest import *
 
 
 @csrf_exempt
@@ -16,10 +16,7 @@ def login(request):
 
             # TODO: look for it in the database
             found = find_user(user, password)
-            # As a note, in order to do the encryption you must call pbkdf2_sha256.verify(password, foundPassword)
-            # where foundPassword is the password for the username that you find in the database
-            # No decrption or rehashing, just using the library's verify function
-            if len(found) != 0:
+            if found == 1:
                 return JsonResponse({'username': user, 'isAuthenticated': True})
         return JsonResponse({'isAuthenticated': False})
     else:
@@ -32,10 +29,6 @@ def register(request):
             data = json.loads(request.body)
             user = data["username"]
             password = data["password"]
-            # found = False
-            # added = False
-            hashedPassword = pbkdf2_sha256.hash(password)
-            # TODO: look for user and try to add (use hashedPassword for add instead of plain password)
             found, added = insert_user(user, password)
             if found:
                 return JsonResponse({'alreadyExists': True, 'isAuthenticated': False})
@@ -52,5 +45,20 @@ def id(request, key_id):
     if request.method == 'GET':
         # TODO: display user from database/more information or something
         return HttpResponse("Hello I am user {}".format(key_id))
+    else:
+        return HttpResponse("404: Route not available")
+
+
+def getBotInfoWithID(request, bot_id):
+    if request.method == 'GET':
+        key = 1 #database call here
+        return JsonResponse({'alpacaKey': key})
+    else:
+        return HttpResponse("404: Route not available")
+    
+def getBotInfo(request):
+    if request.method == 'GET':
+        keys = [] #database call here
+        return JsonResponse({'alpacaKeys': keys})
     else:
         return HttpResponse("404: Route not available")

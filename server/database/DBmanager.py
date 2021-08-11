@@ -1,5 +1,6 @@
-from DButil import DatabaseUtil
+from .DButil import DatabaseUtil
 import json
+from passlib.hash import pbkdf2_sha256
 
 with open("config.json", "r") as file:
     config = json.load(file)
@@ -14,16 +15,19 @@ class Users(object):
     def set_up_db(self):
         self.db.create_table("BrokerBot_configuration_Users", self.user_fields)
 
+    #returns a tuple of two ints
+    #tuple[0] = 0 if user is not found, = 1 if user is found
+    #tuple[1] = 0 if user is not added to database, = 1 is user is added
     def insert_data_for_Users(self, username, password):
-        repeat = self.find_user(username, password)
-        if len(repeat) != 0:
-            print("Username or password already exists.")
+        found = self.find_user(username, password)
+        if found != 0:
+            print("Username already exists.")
             return 1, 0
         else:
             try:
                 qry = """insert into
                         BrokerBot_configuration_Users(username_, password_)
-                        values('%s', '%s')""" % (username, password)
+                        values('%s', '%s')""" % (username, pbkdf2_sha256.encrypt(password))
                 cur = self.db.get_cur()
                 cur.execute(qry)
                 self.db.commit()
@@ -33,12 +37,17 @@ class Users(object):
                 return 0, 0
 
     def find_user(self, username, password):
-        qry = """select * from BrokerBot_configuration_Users where 
-        username_ = '%s' and password_ = '%s'""" % (username, password)
+        qry = """select * from brokerbot_configuration_users where 
+        username = '%s'""" % (username)
         cur = self.db.get_cur()
         cur.execute(qry)
         users = cur.fetchall()
-        return users
+        if (len(users) == 0):
+            return 0
+        for user in users: #check for all users returned if their password is the same as the given password
+            if pbkdf2_sha256.verify(password, user[2]): 
+                return 1
+        return 2
 
 
 class Bots(object):
