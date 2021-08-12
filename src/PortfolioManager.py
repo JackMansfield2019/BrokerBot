@@ -391,8 +391,8 @@ class PortfolioManager:
         }
         self.api = tradeapi.REST(self.headers["APCA-API-KEY-ID"],
                                  self.headers["APCA-API-SECRET-KEY"], self.base_url)
-        self.account_url = "{}/v2/account".format(self.base_url)
-        self.order_url = "{}/v2/orders".format(self.base_url)
+        self.account_url = "{}v2/account".format(self.base_url)
+        self.order_url = "{}v2/orders".format(self.base_url)
         self.liquid = float(self.api.get_account().cash)
         self.balance = float(self.api.get_account().portfolio_value)
         self.assets = self.balance - self.liquid

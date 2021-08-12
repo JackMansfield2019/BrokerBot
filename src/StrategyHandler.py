@@ -197,7 +197,7 @@ class StrategyHandler:
             searcher_strat_conns.append(search_strat)
 
         self.searcher = Searcher(self.api_key, self.secret_key, self.base_url, self.socket, searcher_strat_conns)
-
+        """
         searcher_proc = Process(target=self.searcher.search, args=())
         searcher_proc.start()
 
@@ -216,3 +216,4 @@ class StrategyHandler:
 
             else:
                 time.sleep(60)
+        """

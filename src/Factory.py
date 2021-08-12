@@ -329,11 +329,11 @@ class Strategy_factory:
         Constructs and returns proper startegy based on passed in enum.
 
             Parameterss:
-                enum (ENUM): enumeration for Data Handler API (DH_api)
-                params (list): contains Data Handler parameters
+                enum (ENUM): enumeration for the Strategy
+                params (list): contains Strategy parameters
 
             Returns: 
-                Valid Data Handler object based on parameter
+                Valid Strategy object based on parameter
             
             Throws: 
                 ValueError if parameter is invalid

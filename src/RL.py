@@ -244,6 +244,8 @@ class RL:
     """
 
     def run():
+        print("success")
+        """
         # set as default 
         window_size = 30 
 
@@ -261,5 +263,6 @@ class RL:
             # hold
             next_state = getState(data, t + 1, window_size + 1)
             reward = 0
+    """
 
 #---------------------------------------------------------------------------------------------------

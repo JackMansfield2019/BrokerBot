@@ -29,6 +29,12 @@ class Searcher:
     self.strat_conns = strat_conns
     self.strat_counter = 0
     self.stock_set = set()
+    print("These are the parameters of searcher:")
+    print(API_key_id)
+    print(API_secret_key)
+    print(base_url)
+    print(socket)
+    print(strat_conns)
     self.api = tradeapi.REST(
                           self.headers["APCA-API-KEY-ID"],
                           self.headers["APCA-API-SECRET-KEY"],

@@ -337,7 +337,7 @@ class AlpacaDataHandler(DataHandler):
     #--------------------------------------------------------------------------------------------------------------
 
     def on_error(self, ws, error):
-         '''
+        '''
         *** Missing Overview ***
 
             Parameters: 
@@ -348,7 +348,7 @@ class AlpacaDataHandler(DataHandler):
     #--------------------------------------------------------------------------------------------------------------
 
     def start_streaming(self, tickers):
-         '''
+        '''
         *** Missing Overview ***
 
             Parameters: 

@@ -13,7 +13,7 @@ import os
 from StrategyHandler import StrategyHandler
 #==================================================================================================================
 
-class BrokerBot:
+class BrokerBot():
     """
     Class: Broker Bot
 
@@ -74,7 +74,11 @@ class BrokerBot:
     """
     def __init__(self, api_key, secret_key, base_url, socket, search_conn):
         if api_key is None or secret_key is None or base_url is None or socket is None:
-            raise RuntimeError('BrokerBot initalized with a null') from exc
+            print(api_key)
+            print(secret_key)
+            print(base_url)
+            print(socket)
+            raise RuntimeError('BrokerBot initalized with a null')
 
         self.market_open = True
         self.api_key = api_key
@@ -184,13 +188,13 @@ class BrokerBot:
             self.sh_pipe_conns.append(bb_sh_conn)
             self.sh_instances.append(StrategyHandler(
                 self.api_key, self.secret_key, self.base_url, self.socket, strat, self.input))
-
+        """
         for sh in self.sh_instances:
             self.sh_processes.append(Process(target=sh.run, args=()))
 
         for proc in self.sh_processes:
             proc.start()
-
+        """
         while True:
             if not self.market_open:
                 for proc in sh_processes:
@@ -199,7 +203,10 @@ class BrokerBot:
                 commands = self.get_commands()
                 cmd_list = list(commands)
         
-                user = input()
+                try:
+                    user = input("Type q to exit or press 'ENTER':")
+                except EOFError:
+                    continue
                 if(user == 'q'):
                     break
                 if(user in cmd_list):
