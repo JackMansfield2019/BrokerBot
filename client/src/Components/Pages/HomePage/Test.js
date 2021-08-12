@@ -25,31 +25,46 @@ class ApexChart extends React.Component {
           
             series: [
               {
-                name: 'South',
-                data: generateDayWiseTimeSeries(new Date('11 Feb 2017 GMT').getTime(), 20, {
+                name: 'Investment 1',
+                data: generateDayWiseTimeSeries(new Date('24 jul 2021 GMT').getTime(), 20, {
                   min: 10,
                   max: 60
                 })
               },
               {
-                name: 'North',
-                data: generateDayWiseTimeSeries(new Date('11 Feb 2017 GMT').getTime(), 20, {
+                name: 'Investment 2',
+                data: generateDayWiseTimeSeries(new Date('24 jul 2021 GMT').getTime(), 20, {
                   min: 10,
-                  max: 20
+                  max: 90
                 })
               },
               {
-                name: 'Central',
-                data: generateDayWiseTimeSeries(new Date('11 Feb 2017 GMT').getTime(), 20, {
+                name: 'Investment 3',
+                data: generateDayWiseTimeSeries(new Date('24 jul 2021 GMT').getTime(), 20, {
+                  min: 25,
+                  max: 70
+                })
+              },
+              {
+                name: 'Investment 4',
+                data: generateDayWiseTimeSeries(new Date('24 jul 2021 GMT').getTime(), 20, {
                   min: 10,
-                  max: 15
+                  max: 250
+                })
+              },
+              {
+                name: 'Investment 5',
+                data: generateDayWiseTimeSeries(new Date('24 jul 2021 GMT').getTime(), 20, {
+                  min: 100,
+                  max: 180
                 })
               }
             ],
             options: {
               chart: {
                 type: 'area',
-                height: 350,
+                width: '100%',
+                height: '100%',
                 stacked: true,
                 events: {
                   selection: function (chart, e) {
@@ -57,7 +72,7 @@ class ApexChart extends React.Component {
                   }
                 },
               },
-              colors: ['#008FFB', '#00E396', '#CED4DC'],
+              colors: ['#ffb3ba', '#baffc9', '#bae1ff', 	"#ffdfba", "#f5e1fd"],
               dataLabels: {
                 enabled: false
               },
@@ -72,11 +87,16 @@ class ApexChart extends React.Component {
                 }
               },
               legend: {
-                position: 'top',
-                horizontalAlign: 'left'
+                position: 'right',
+                horizontalAlign: 'center'
               },
               xaxis: {
                 type: 'datetime'
+              },
+              yaxis: {
+                labels: {
+                  formatter: function (value) { return "$" + value;}
+                }
               },
             },
           
@@ -88,8 +108,8 @@ class ApexChart extends React.Component {
 
         render() {
           return (
-                <div id="chart">
-            <ReactApexChart options={this.state.options} series={this.state.series} type="area" height={350} />
+            <div id="chart">
+              <ReactApexChart options={this.state.options} series={this.state.series} type="area" height={400} />
             </div>
 
           );
