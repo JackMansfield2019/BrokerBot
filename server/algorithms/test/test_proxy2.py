@@ -7,15 +7,16 @@ def on_open(ws):
     print("opened")
     auth_data = {
         "action": "authenticate",
-        "data": {"key_id": "INSERT_KEY", "secret_key": "INSERT_KEY"}
+        "data": {"key_id": "PKELET6JFR9MH8UC3J8Q", "secret_key": "r3fGG3uCbulKZRLm3ZlRQ7GYngRdwnglmryebr9R"}
     }
 
     ws.send(json.dumps(auth_data))
-
+    print(14)
     listen_message = {"action": "listen", "data": {"streams": ["T.TSLA"]}}
-
+    print(16)
     ws.send(json.dumps(listen_message))
-
+    print(18)
+    self.on_close(ws)
 
 def on_message(ws, message):
     print("received a message")
@@ -40,3 +41,5 @@ ws = websocket.WebSocketApp(socket,
 
 t1 = threading.Thread(target=ws.run_forever, args=())
 t1.start()
+print(43)
+t1.join()

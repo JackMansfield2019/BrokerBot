@@ -12,15 +12,117 @@ import itertools
 import requests
 import json
 import pandas as pd
+#==================================================================================================================
 
 class PortfolioManager:
+    """
+    Class: PortfolioManager 
+    .............................................................................................................
 
-    # Overview: PortfolioManager acts as a basic UI for BrokerBot.
-    #           Allows for a user to input commands and outputs basic
-    #           information about BrokerBot operations
-    # To Do: Create Constructor. I/O for api's, strategies, stop/loss, cap
-    #        Be able to interface with other classes
+    Overview
+    --------
+    Portfolio Manager acts as a basic UI for BrokerBot.
+    It allows a user to input commands and outputs basic information about BrokerBot operations 
 
+    .............................................................................................................
+    
+    Attributes
+    ----------
+    api_key : int
+        api key
+
+    secret_key : int
+        secret key
+
+    base_url : str
+        base url***
+
+    socket : str
+        socket url 
+    
+    .............................................................................................................
+
+    Methods
+    -------
+    calc_combos:
+        Function to calculate all combinations of strategies
+    
+    get_input:
+        Function to return self.input values
+
+    strat_combs:
+        Function to return self.input values
+    
+    get_total_return:
+        Function that returns the user's total all time return
+    
+    get_todays_return:
+        Function that returns the user's return for the current day
+    
+    get_strat:
+        Function that returns current running strategy/strategies
+    
+    get_current_strat:
+        Prints current strategy
+    
+    get_diversity_score:
+        Function that computes a portfolio diversity score based on the current holdings the user has
+    
+    get_current_liquid_cash:
+        Function that returns the user's remaining total of liquid cash left in their account
+
+    get_current_total_stock_value:
+        Function that returns the user's current total value they have vested in stocks
+    
+    get_current_total_crypto_value:
+        Function that returns the user's current total value they have vested in crypto
+    
+    get_balance:
+        Function that displays the entire balance of a user
+    
+    order_history:
+        Displays entire order history of a user's account
+    
+    check_positions:
+        Displays all positions of a user's account
+
+    add_strat:
+        Adds current strategy to self.strategies
+    
+    initial_setup:
+        Sets the initial values of input
+    
+    set_alpaca:
+        Sets Alpaca API values if alpaca api is selected for Execution Handler (EH)
+    
+    change_strat:
+        Changes the strategy based on user input
+    
+    change_risk:
+        Changes the risk based on user input
+    
+    add_to_watch_list(strat, ticker):
+        Adds a stock ticker or strategy to the user's watch list
+    
+    remove_from_watch_list(strat, ticker):
+        Removes a stock ticker or strategy from the user's watch list
+    
+    withdraw:
+        Function that withdraws money from balance
+    
+    deposit:
+        Function that adds money to balance
+
+    .............................................................................................................
+
+    Pending Tasks
+    -------------
+    1. Create Constructor
+    2. I/O for API's, Strategies, Stop/Loss, Cap
+    3. Be able to interface with other classes 
+
+    .............................................................................................................
+    """
     # ====================Creators====================
     def __init__(self, api_key, secret_key, base_url, socket):
         self.api_key = api_key
@@ -44,16 +146,17 @@ class PortfolioManager:
 
         # inputs in the form [strategy, risk, DH_api, EH_api, stop_loss]
         self.initial_setup()
+    #--------------------------------------------------------------------------------------------------------------
         
     # ====================Observers====================
-    # Overview: Function to calculate all combinations of strategies
-    #
-    # Requires: none
-    # Modifies: none
-    # Effects: none
-    # Returns: combinations calculated
-    # Throws: none
+
     def calc_combos(self):
+        '''
+        Function to calculate all combinations of strategies
+            
+            Returns:
+                Combos (list): combinations calculated
+        '''
         strats = [1,2,3,4,5,6,7,8,9]
         risks = [1,2,3,4,5,6,7,8,9]
         dh_api = [1,2,3,4,5]
@@ -62,142 +165,132 @@ class PortfolioManager:
         combined = [strats,risks,dh_api,eh_api,stop_loss]
         combos = list(itertools.product(*combined))
         return combos
+    #--------------------------------------------------------------------------------------------------------------
 
-    # Overview: Function to return self.input values
-    #
-    # Requires: none
-    # Modifies: none
-    # Effects: none
-    # Returns: self.input
-    # Throws: none
     def get_input(self):
+        '''
+        Function to return self.input values
+
+            Returns:
+                self.input
+        '''
         return self.input
+    #--------------------------------------------------------------------------------------------------------------
     
-    # Overview: Function to return all combinations of strategies
-    #
-    # Requires: none
-    # Modifies: none
-    # Effects: none
-    # Returns: self.combos
-    # Throws: none
     def strat_combs(self):
+        '''
+        Function to return all combinations of strategies
+
+            Returns:
+                self.combos
+        '''
         #print(self.combos)
         return self.combos
+    #--------------------------------------------------------------------------------------------------------------
     
-        
-    # Overview: Function that returns the user's total all time return
-    #
-    # Params: self (PortfolioManager Object)
-    # Requires: None
-    # Modifies: None
-    # Effects: None
-    # Returns: Returns the total all time return of the user's account
     def get_total_return(self):
+        '''
+        Function that returns the user's total all time return
+
+            Returns: 
+                The total all time return of the user's account 
+        '''
         pass
+    #--------------------------------------------------------------------------------------------------------------
         
-    # Overview: Function that returns the user's return for the current day
-    #
-    # Params: self (PortfolioManager Object)
-    # Requires: None
-    # Modifies: None
-    # Effects: None
-    # Returns: Returns the return of the current day for this user's account
     def get_todays_return(self):
+        '''
+        Function that returns the user's return for the current day
+
+            Returns:
+                the retun of the current day for this user's account
+        '''
         pass
-        
-    # Overview: Function that returns current running strategy/strategies
-    #
-    # Params: self (PortfolioManager Object)
-    # Requires: None
-    # Modifies: None
-    # Effects: None
-    # Returns: Returns a list of length 0...n depending on the number of
-    #          strategies the user is currently using. This list contains
-    #          the current strategies.
+    #--------------------------------------------------------------------------------------------------------------
+
     def get_strat(self):
+        '''
+        Function that returns current running strategy/strategies
+
+            Returns:
+                A list of length 0...n depending on the number of strategies the user is currently using.
+                This list contains the current strategies.
+        '''
         print(self.strategies)
         return self.strategies
+    #--------------------------------------------------------------------------------------------------------------
     
-    # Overview: Prints current strategy
-    #
-    # Requires: none
-    # Modifies: none
-    # Effects: none
-    # Returns: self.input
-    # Throws: none
-    # TODO: 
     def get_current_strat(self):
+        '''
+        Prints current strategy
+
+            Returns: 
+                self.input
+        '''
         print(self.input)
         return self.input
+    #--------------------------------------------------------------------------------------------------------------
     
-    # Overview: Function that computes a portfolio diversity score based
-    #           on the current holdings the user has.
-    #
-    # Params: self (PortfolioManager Object)
-    # Requires: The user has at least one holding
-    # Modifies: None
-    # Effects: None
-    # Returns: Returns a number between 0 and 100, 0 meaning the user only
-    #          has one stock and 100 meaning the user's portfolio is very
-    #          diverse. The score is computed based on strategies being
-    #          used the number and diversity of tickers being traded.
     def get_diversity_score(self):
+        '''
+        Function that computes a portfolio diversity score based on the current holdings the user has.
+
+            Returns:
+                A number between 0 and 100, 0 meaning the user only has one stock and 100 meaning the user's portfolio is very diverse. 
+                The score is computed based on strategies being used the number and diversity of tickers being traded.
+        '''
         pass
+    #--------------------------------------------------------------------------------------------------------------
         
-    # Overview: Function that returns the user's remaining total of
-    #           liquid cash left in their account.
-    #
-    # Params: self (PortfolioManager Object)
-    # Requires: None
-    # Modifies: None
-    # Effects: None
-    # Returns: A float representing the liquid cash in the user's account.
-    # TODO: Add functionality for other apis
     def get_current_liquid_cash(self):
+        '''
+        Function that returns the user's remaining total of liquid cash left in their account.
+
+            Returns:
+                A float representing the liquid cash in the user's account.    
+        '''
+        # TODO: Add functionality for other apis
         print("Liquid Balance: {:.2f}".format(self.liquid))
         return self.liquid
-        
-    # Overview: Function that returns the user's current total value they have
-    #           vested in stocks.
-    #
-    # Params: self (PortfolioManager Object)
-    # Requires: None
-    # Modifies: None
-    # Effects: None
-    # Returns: A float representing the value of all of the user's stocks.
-    def get_current_total_stock_value(self):
-        pass
-        
-    # Overview: Function that returns the user's current total value they have
-    #           vested in crypto.
-    #
-    # Params: self (PortfolioManager Object)
-    # Requires: None
-    # Modifies: None
-    # Effects: None
-    # Returns: A float representing the value of all of the user's crypto holdings.
-    def get_current_total_crypto_value(self):
-        pass
+    #--------------------------------------------------------------------------------------------------------------
     
-    # Overview: Function that displays the entire balance of a user
-    #
-    # Params: self (PortfolioManager Object)
-    # Requires: None
-    # Modifies: None
-    # Effects: None
-    # Returns: Returns a number reflecting entire balance of a user
-    # TODO: Add functionality for other API's
-    def get_balance(self):
+    def get_current_total_stock_value(self):
+        '''
+        Function that returns the user's current total value they have vested in stocks.
+
+            Returns:
+                A float representing the value of all of the user's stocks.
+        '''
         pass
+    #--------------------------------------------------------------------------------------------------------------
         
-    # Overview: Displays entire order history of a user's account
-    #
-    # Params: self (PortfolioManager Object)
-    # Requires: None
-    # Modifies: None
-    # Effects: None
-    # Returns: Creates chart displaying all orders from a user account
+    def get_current_total_crypto_value(self):
+        '''
+        Function that returns the user's current total value they have vested in crypto.
+
+            Returns:
+                A float representing the value of all of the user's crypto holdings.
+        '''
+        pass
+    #--------------------------------------------------------------------------------------------------------------
+    
+    def get_balance(self):
+        '''
+        Function that displays the entire balance of a user.
+
+            Returns: 
+                A number reflecting entire balance of a user.
+        '''
+        pass
+    #--------------------------------------------------------------------------------------------------------------
+        
     def order_history(self):
+        '''
+        Displays entire order history of a user's account.
+
+            Returns:
+                Creates chart displaying all orders from a user account
+        '''
         orders = self.api.list_orders(status='closed')
         columns = ["Symbol","Type","Date","Shares","Price per Share",
                    "Notional","Amount","Status"]
@@ -217,15 +310,15 @@ class PortfolioManager:
             table['Status'].append(i.status)
         df = pd.DataFrame(table)
         print(df)
+    #--------------------------------------------------------------------------------------------------------------
 
-    # Overview: Displays all positions of a user's account
-    #
-    # Params: self (PortfolioManager Object)
-    # Requires: None
-    # Modifies: None
-    # Effects: None
-    # Returns: Creates chart displaying all positions from a user account
     def check_positions(self):
+        '''
+        Displays all positions of a user's account
+
+            Returns:    
+                Creates chart displaying all positions from a user account
+        '''
         pos = self.api.list_positions()
         col = ["Symbol","Avg Buy","Profit","Qty","Daily Change","Current Price",
                "Last Day Price","Market Value"]
@@ -243,29 +336,25 @@ class PortfolioManager:
                             (float(i.current_price)-float(i.avg_entry_price))))
         df = pd.DataFrame(table)
         print(df)
-    # ====================Producers====================
-    # ====================Mutators====================
-    # Overview: Adds current strategy to self.strategies
-    #
-    # Requires: none
-    # Modifies: self.strategies
-    # Effects: self.strategies.append(self.input)
-    # Returns: self.strategies
-    # Throws: none
-    # TODO: 
+    #--------------------------------------------------------------------------------------------------------------
+
     def add_strat(self):
+        '''
+        Adds current strategy to self.strategies
+
+            Returns:
+                self.strategies
+        '''
         self.strategies.append(self.input.copy())
         return self.strategies
+    #--------------------------------------------------------------------------------------------------------------
 
-    # Overview: Sets the initial values of input
-    #
-    # Requires: none
-    # Modifies: self.input
-    # Effects: val of self.input changes based on user input
-    # Returns: none
-    # Throws: none
-    # TODO: Add functionality for other api's
     def initial_setup(self):
+        '''
+        Sets the initial values of input
+        '''
+        # TODO: Add functionality for other api's 
+
         print("Enter the specified Strategy: (1-9)")
         strat = int(input())
         name = Strategies(strat).name
@@ -290,92 +379,79 @@ class PortfolioManager:
         self.add_strat()
         if(self.input[3] == 1):
             self.set_alpaca()
+    #--------------------------------------------------------------------------------------------------------------
 
-    # Overview: Sets Alpaca API values if alpaca api is selected for EH
-    #
-    # Requires: none
-    # Modifies: self.headers, self.account_url, self.order_url
-    # Effects: self.headers takes the api key/secret key and formats to alpaca format
-    #          self.account_url takes base url and formats to alpaca format
-    #          self.order_url takes base url and formats to alpaca format
-    # Returns: none
-    # Throws: none
     def set_alpaca(self):
+        '''
+        Sets Alpaca API values if alpaca api is selected for Execution Handler
+        '''
         self.headers = {
             "APCA-API-KEY-ID": self.api_key,
             "APCA-API-SECRET-KEY": self.secret_key
         }
         self.api = tradeapi.REST(self.headers["APCA-API-KEY-ID"],
                                  self.headers["APCA-API-SECRET-KEY"], self.base_url)
-        self.account_url = "{}/v2/account".format(self.base_url)
-        self.order_url = "{}/v2/orders".format(self.base_url)
+        self.account_url = "{}v2/account".format(self.base_url)
+        self.order_url = "{}v2/orders".format(self.base_url)
         self.liquid = float(self.api.get_account().cash)
         self.balance = float(self.api.get_account().portfolio_value)
         self.assets = self.balance - self.liquid
+    #--------------------------------------------------------------------------------------------------------------
 
-    # Overview: Changes the strategy based on user input
-    #
-    # Requires: none
-    # Modifies: self.input[0]
-    # Effects: self.input[0] changes based on user input
-    # Returns: none
-    # Throws: none
-    # TODO: Add functionality to stop one strategy and start new one
     def change_strat(self):
+        '''
+        Changes the strategy based on user input.
+        '''
+        # TODO: Add functionality to stop one strategy and start new one 
+        
         print("Enter new Strategy to use: (1-9)")
         strat = int(input())
         name = Strategies(strat).name
         print("Selected Strategy: {}".format(name))
         self.input[0] = strat
         self.add_strat()
+    #--------------------------------------------------------------------------------------------------------------
 
-    # Overview: Changes the risk based on user input
-    #
-    # Requires: none
-    # Modifies: self.input[1]
-    # Effects: self.input[1] changes based on user input
-    # Returns: none
-    # Throws: none
-    # TODO: Add functionality to change risk value used
     def change_risk(self):
+        '''
+        Changes the risk based on user input.
+        '''
+        # TODO: Add functionality to change risk value used
+
         print("Enter new Risk to use: (1-9)")
         risk = int(input())
         name = Risk(risk).name
         print("Selected Risk: {}".format(name))
         self.input[1] = risk
         self.add_strat()
-    
-    # Overview: Adds a stock ticker or strategy to the user's watch list.
-    #
-    # Requires: none
-    # Modifies: self.watch_list
-    # Effects: adds a ticker to self.watch_list
-    # Returns: none
-    # Throws: none
-    def add_to_watch_list(self, strat, ticker):
-        pass
-        
-    # Overview: Removes a stock ticker or strategy from the user's watch list.
-    #
-    # Requires: none
-    # Modifies: self.watch_list
-    # Effects: removes a ticker from self.watch_list
-    # Returns: none
-    # Throws: none
-    def remove_from_watch_list(self, strat, ticker):
-        pass
-    
+    #--------------------------------------------------------------------------------------------------------------
 
-    # Overview: Function that withdraws money from balance
-    #
-    # Params: None
-    # Requires: None
-    # Modifies: this.balance
-    # Effects: this.balance -= minus
-    # Returns: Returns a number reflecting new balance
-    # Throws: Assertion if withdraw is greater than balance
-    # TODO: Add functionality to actually withdraw to various API Accounts
+    def add_to_watch_list(self, strat, ticker):
+        '''
+        Adds a stock ticker or strategy to the user's watch list.
+        '''
+        pass
+    #--------------------------------------------------------------------------------------------------------------
+        
+    def remove_from_watch_list(self, strat, ticker):
+        '''
+        Removes a stock ticker or strategy from the user's watch list.
+        '''
+        pass
+    #--------------------------------------------------------------------------------------------------------------
+
     def withdraw(self):
+        '''
+        Function that withdraws money from balance.
+
+            Returns: 
+                self.liquid (int): a number reflecting new balance 
+            
+            Throws:
+                Assertion if withdraw is greater than balance 
+        '''
+        # TODO: Add functionality to actually withdraw to various API Accounts
+
         print("Current Liquid Balance: {:0.2f}".format(self.liquid))
         print("Enter a value to withdraw")
         user = int(input())
@@ -385,16 +461,17 @@ class PortfolioManager:
         self.liquid -= user
         print("New Liquid Balance: {:0.2f}".format(self.liquid))
         return self.liquid
-    
-    # Overview: Function that adds money to balance
-    #
-    # Params: self (PortfolioManager Object)
-    # Requires: None
-    # Modifies: this.balance
-    # Effects: this.balance += plus
-    # Returns: Returns a number reflecting entire balance of a user
-    # TODO: Add functionality to actually deposit to various API Accounts
+    #--------------------------------------------------------------------------------------------------------------
+
     def deposit(self):
+        '''
+        Function that adds money to balance
+
+            Returns:
+                self.liquid (int): a number relfecting entire balance of a user 
+        '''
+        # TODO: Add functionality to actually deposit to various API Accounts
+
         print("Current Balance: {:0.2f}".format(self.balance))
         print("Enter a value to deposit")
         user = int(input())
@@ -402,4 +479,5 @@ class PortfolioManager:
         self.balance += user
         print("New Balance: {:0.2f}".format(self.balance))
         return self.liquid
-    
+    #--------------------------------------------------------------------------------------------------------------
+#==================================================================================================================

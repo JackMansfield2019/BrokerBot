@@ -1,6 +1,6 @@
 import { createAsyncThunk , createSlice } from '@reduxjs/toolkit';
 
-
+/*
 export const veryifyLogin = createAsyncThunk(
     'user/auth/veryifyLogin',
     async(payload) => {
@@ -36,7 +36,7 @@ export const verifyRegister = createAsyncThunk(
         } 
     }  
 );
-
+*/
 export const userSlice = createSlice({
     name: 'userData',
     initialState: {
@@ -51,13 +51,13 @@ export const userSlice = createSlice({
             state.isAuthenticated = true;
         }
     },
-    extraReducers: {
+    /*extraReducers: {
     [verifyLogin.fulfilled]: (state, action) => {
         //update the state based on response
     },
     [verifyResponse.fulfilled]: (state, action) => {
         //update the state based on the response
-    }, 
+    }, */
 
 
 });

@@ -89,11 +89,12 @@ class HomePage extends React.Component {
                                             categories={["Capital Gain", "Dividends", "Currency Gain", "Std. Dev", "Adj. Return", "Expected", "Total Return"]} 
                                             inputData={ [{title: "Monetary(USD) gains/losses", values: [ 500.00, 0.00, 0.00, 25.00, -4000, 15000.00, 500.00]}, 
                                                          {title: "Percentage(%) gains/losses", values: ["1.00%", "2.00%", "0.00%", "4.00%", "-5.00%", "6.00%", "6.62%"]}] }/>
-                            <DataDisplay title={"Your Portfolio's Holdings"} categories={["Price", "Qty.", "Value", "Capital Gains", "Dividends", "Currency", "Return"]} inputData={ [{title: "$ERTC", values: [0, 1, 2, 0, 1, 2, 6]}, 
-                                                                                                                               {title: "$NPKL", values: [1, 2, 3, 0, 1, 2, 6]},
-                                                                                                                               {title: "$APED", values: [1, 2, 3, 0, 1, 2, 4]},
-                                                                                                                               {title: "$OPEK", values: [1, 2, 3, 0, 1, 2, 0]}] }
-                                                                                                                resultValues={[0, 0, 0, 0, 0, 0, 0] }
+                            <DataDisplay title={"Your Portfolio's Holdings"} categories={["Price", "Qty.", "Value", "Capital Gains", "Dividends", "Currency", "Return"]} inputData={ [
+                                                                                                                               {title: "$APPL", values: ["$303.19", "101","23362.18", "50.02%", "2.64", "0.0%", "55.01%"]}, 
+                                                                                                                               {title: "$NEPL", values: ["$134.70", "53", "5,446.54", "20.32%", "3.64%", "0.0%", "25.26%"]},
+                                                                                                                               {title: "$APED", values: ["$24.00", "10", "240.00", "12.50%", "0.0%", "0.0%", "12.50%"]},
+                                                                                                                               {title: "$OPEK", values: ["$312.00", "12", "3744.00", "11.00%", "0.00%", "0.00%", "11.00%"]}] }
+                                                                                                                resultValues={["", "", "$242792.72", "93.84%", "6.28%", "0.00%", "103.67%"] }
                                                                                                                 delPopupTrigger={this.setDeleteHoldingPopup} />
                           </div>
                         </div>

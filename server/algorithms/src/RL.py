@@ -1,3 +1,9 @@
+from Strategy import Strategy
+from DataHandler import *
+from ExecutionHandler import *
+import queue
+from multiprocessing import Pipe
+from threading import Thread
 class Trader(): 
     def __init__(self, state_size, is_eval=False, model_name=""):
         self.state_size = state_size # normalized previous days
@@ -42,8 +48,166 @@ class Trader():
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
     
+
+# TODO : fix abstract class issues
+class RL:
     
-class RL(Strategy):
+    def __init__(self, dh: DataHandler, eh: ExecutionHandler, ticker: str, strat_search_conn):
+        self.dh = dh
+        self.eh = eh
+        self.ticker = ticker
+        self.dh_queue = None
+        self.eh_conn = None
+        self.queue = []
+        self.strat_search_conn = strat_search_conn
+        self.target_stocks = []
+       
+    
+    def start(self):
+        
+        #instantiate connections to the data handler and execution handler.
+        st_dh_queue = queue.LifoQueue()
+        st_eh_conn, eh_sh_conn = Pipe()
+        self.set_eh_dh_conns(st_dh_queue, st_eh_conn)
+        # Set queue in DH
+        self.dh.set_sh_queue(st_dh_queue)
+
+        #Thread incoming data stream from the data handler.
+        dh_stream_thread = Thread(
+            target=self.dh.start_streaming, args=([""],))
+       
+        dh_stream_thread.start()
+
+        # dh_listen_thread = Thread(target=self.test_dh_queue, args=())
+        # dh_listen_thread.start()
+
+        searcher_thread = Thread(target=self.listen_for_searcher, args=())
+        searcher_thread.start()
+
+        
+        # Initialize any technical indicators needed from the Lib.
+        # Start strategy, pop stock from target stocks when needed
+
+    
+    def listen_for_searcher(self):
+        while True:
+            target_stock = self.strat_search_conn.recv()
+            if target_stock not in self.queue:
+                print(f"added {target_stock} to queue in strat")
+                self.queue.append(target_stock)
+
+
+    
+    def next(self):
+        #Buy Conditional
+        #random buy thing for example.
+        if self.position.size == 0:
+            size = int(self.broker.getcash() / 1+ self.position.size)
+            self.buy(size=size)
+        # Sell Conditional
+        
+        pass
+
+    
+    def run_strat(self):
+        #just start streaming for example.
+        self.start()
+
+        while len(self.queue) == 0:
+            continue
+        self.ticker = self.queue[0]
+        self.pop_queue()
+
+        for i in range(0, 5): # stays on one stock for 5 minutes, before switching to next stock in priority queue 
+            self.dh.listen([self.ticker], "T")
+            previous_time = int(time.time() - 60)
+            current_time = int(time.time())
+            df_price = self.df.get_bars(ticker, previous_time, current_time, "1Min", "2")
+
+            #df_current = self.st_dh_queue.pop() 
+            #df_previous = self.st_dh_queue.pop() 
+
+            #previous_close = df_previous["close"]
+            #previous_open = df_previous["open"]
+            previous_close = df_price.iloc[1, 4]
+            previous_open = df_price.iloc[1, 1]
+            previous_candle = previous_close - previous_open 
+
+            #current_close = df.current["close"]
+            #current_open = df.current["open"]
+            current_close = df_price.iloc[0, 4]
+            current_open = df_price.iloc[0, 1] 
+            current_candle = current_close - current_open 
+
+            # Bullish Engulfing Buy Condition 
+            if (previous_candle < 0 and current_candle > 0) and (current_open <= previous_open and current_close > previous_close):
+                signal = 'buy'
+                #self.eh.start_streaming(signal) 
+                #money_alloc = self.eh.money_alloc_pre(0.0025, 15) 
+                self.eh.create_order(self.ticker, 5, signal, 'market', 'gtc') 
+
+            # Bearish Engulfing Sell Condition 
+            if (previous_candle > 0 and current_candle < 0) and (current_open >= previous_open and current_close < previous_close):
+                signal = 'sell'
+                #self.eh.start_streaming(signal) 
+                self.eh.create_order(self.ticker, 5, signal, 'market', 'gtc')
+
+            #time.sleep(60)
+            #next_time = current_time + 60
+            #next_time = round(current_time + 60, 0) 
+            next_time = current_time + 60 
+            while time.time() < next_time:
+                #time.sleep(1) 
+
+                """    
+                if time.time() = next_time:
+                    continue 
+                else:
+                    time.sleep(1) 
+                """ 
+   
+    """
+    Overview: sets the pipe connections
+
+    Requires: none
+    Modifies: none
+    Effects: none
+    Returns: none
+    Throws: RunTimeError if any of the parameters are null
+    """
+    def set_eh_dh_conns(self, dh_q, eh_conn):
+        if dh_q is None or eh_conn is None:
+            raise RuntimeError('set_eh_dh_conns called with a null') from exc
+        self.dh_queue = dh_q
+        self.eh_conn = eh_conn
+    """
+    Overview: adds a stock to the queue
+
+    Requires: none
+    Modifies: self.queue
+    Effects: appends "stock" to self.queue
+    Returns: none
+    Throws: none
+    """
+    def add_queue(self, stock):
+        print("Adding {} to queue".format(stock))
+        self.queue.append(stock)
+    """
+    Overview: pops a stock from the queue
+
+    Requires: queue is not empty
+    Modifies: self.queue
+    Effects: appends "stock" to self.queue
+    Returns: none
+    Throws: RuntimeError if queue is empty
+    """
+    def pop_queue(self, pos=0):
+        if len(self.queue) == 0:
+            raise RuntimeError('cannot pop element from an empty queue') from exc
+        else:
+            print("Popping {} from queue".format(self.queue[pos]))
+            self.queue.pop(pos)
+
     # need to get the stock data from data handler 
     def getStockDataVec(key):
         data = []
@@ -80,6 +244,8 @@ class RL(Strategy):
     """
 
     def run():
+        print("success")
+        """
         # set as default 
         window_size = 30 
 
@@ -90,12 +256,13 @@ class RL(Strategy):
 
         # need to figure out what terminated should be
         while(not terminated):
-            data = self.getStockDataVec(key):
+            data = self.getStockDataVec(key)
             state = getState(data, t, window_size + 1) # need to fix t
             ction = trader.act(state)
 
             # hold
             next_state = getState(data, t + 1, window_size + 1)
             reward = 0
+    """
 
 #---------------------------------------------------------------------------------------------------
