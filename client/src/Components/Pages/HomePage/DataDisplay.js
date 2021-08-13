@@ -44,7 +44,7 @@ class DataDisplay extends React.Component {
                                                   <button type="button" rkey={key++} onClick={() => this.props.delPopupTrigger(true, data.title)} />
                                             <MdDeleteForever size={20} />
                                           </div>    
-                                    </div></> :
+                                    </div></> : 
                                   <><div className="data-display-cell" key={key++} >
                                         <div className="data-display-cell-first" key={key++} >
                                             <div className="data-display-title-wrapper" key={key++}>{data.title}</div>
