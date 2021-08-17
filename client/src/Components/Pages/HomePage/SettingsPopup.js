@@ -63,7 +63,7 @@ class SettingsPopup extends React.Component  {
                     </div>
                     <div className="settings-popup-submit-wrapper"><button type="submit" onClick={(event) => this.onSubmit(event)} />Submit Changes</div>
                 </div> 
-                      </form>
+             </form>
                 
     }
 }

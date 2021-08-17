@@ -4,7 +4,7 @@ import Logo from '../images/BrokerBot.png';
 
 /*------------------ React Redux --------------------*/
 import { connect } from 'react-redux';
-import { userLogin } from '../../../redux/userSlice';
+import { userLogin, userRegister } from '../../../redux/userSlice';
 /*-------------- Page Constant Values -------------- */
 import * as Constants from '../PageConstants'
 
@@ -122,7 +122,13 @@ class LoginPage extends React.Component {
   registerSubmitClicked = event => {
     //var AlertValue = `Email:  ${this.state.email}\nPassword: ${this.state.password}\nConfirm Password: ${this.state.confirmPassword}`;
     ///alert(AlertValue);
-    event.preventDefault();
+    
+    this.props.dispatch(userRegister({
+        ID: 1,
+        email: this.state.email,
+    }));
+    /*event.preventDefault();*/
+
   }
 
   render() {

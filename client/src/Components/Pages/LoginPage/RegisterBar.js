@@ -1,6 +1,7 @@
 import React from 'react';
 import { HiOutlineMail } from "react-icons/hi";
 import { HiOutlineLockClosed } from "react-icons/hi";
+import { Link } from 'react-router-dom';
 
 import FormTextInput from './FormTextInput'
 
@@ -44,7 +45,9 @@ export default function RegisterBar(props) {
                         <HiOutlineLockClosed fontSize="1.25rem" color="white"/>
                     </FormTextInput>
                     <div className="register-submit-btn-wrapper center">
-                        <button>Sign Up</button>
+                        <Link to="/Home">
+                          <input type="submit" value="submit" onClick={e => props.Functions.registerSubmitClicked(e) } className="submit"></input>
+                        </Link>
                       </div>
                     </div>
                     <div className="icons-wrapper center">

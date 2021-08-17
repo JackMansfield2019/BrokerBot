@@ -20,6 +20,7 @@ class DeleteHoldingPopup extends React.Component  {
      */
     YesBtnPressed = () => {
         this.props.setTrigger(false);
+        this.props.delHold(this.props.holdingName);
     }
 
     /**

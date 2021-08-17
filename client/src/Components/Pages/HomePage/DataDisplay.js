@@ -69,7 +69,10 @@ class DataDisplay extends React.Component {
                         {this.props.resultValues.map((categoryValues) => {
                             return <div className="data-display-cell-content" >{categoryValues}</div>
                         })}
-                        <div className="data-display-cell-last" style={{color: "#77DD77"}} ><MdAddCircle size={20} /></div> 
+                        <div className="data-display-cell-last" style={{color: "#77DD77"}} >
+                                 <button type="button" rkey={key++} onClick={() => this.props.addPopupTrigger(true)} />
+                        <MdAddCircle size={20} />
+                        </div> 
                     </div>  
                 </div>
 

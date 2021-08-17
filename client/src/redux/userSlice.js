@@ -43,12 +43,20 @@ export const userSlice = createSlice({
         userID: '',
         userEmail: '',
         isAuthenticated: false, 
+        isRegister: false,
     },
     reducers: {
         userLogin: (state, actions) => {
             state.userEmail = actions.payload.email;
             state.userID = actions.payload.ID;
             state.isAuthenticated = true;
+            state.isRegister = false;
+        },
+        userRegister: (state, actions) => {
+            state.userEmail = actions.payload.email;
+            state.userID = actions.payload.ID;
+            state.isAuthenticated = true;
+            state.isRegister = true;
         }
     },
     /*extraReducers: {
@@ -63,5 +71,5 @@ export const userSlice = createSlice({
 });
 
 
-export const { userLogin } = userSlice.actions;
+export const { userLogin, userRegister } = userSlice.actions;
 export default userSlice.reducer;

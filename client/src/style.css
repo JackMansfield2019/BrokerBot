@@ -876,6 +876,250 @@ body {
   cursor: pointer;
 }
 
+.add-hold-popup-inner {
+  position: relative;
+  background-color: rgba(255,255,255, 1);  
+  width: 400px;
+  height: 490px;
+  color: #252525;
+  border-radius: 4px;
+  display: flex;
+  flex-flow: column;
+}
+
+
+.add-hold-title {
+  font-size: 20px;
+  width: 100%;
+  height: 40px;
+  background: #292929;
+  border-radius: 4px 4px 0px 0px;
+  display: flex;
+  align-items: center;
+  color: #f2f2f2;
+  justify-content: space-between;
+}
+
+.add-hold-popup-title {
+  font-size: 20px;
+  width: auto;
+  padding: 0px 0px 0px 10px;
+  height: 30px;
+
+
+  display: flex;
+  align-items: center;
+  color: #f2f2f2;
+  justify-content: center;
+}
+
+.add-hold-popup-close-wrapper {
+  font-size: 20px;
+  width: 30px;
+  height: 30px;
+  position: relative;
+
+
+  display: flex;
+  align-items: center;
+  color: #f2f2f2;
+  justify-content: center;
+}
+
+
+.add-hold-popup-close-wrapper button {
+  position: absolute; 
+  height: 100%;
+  width: 100%;
+
+  opacity: 0;
+  cursor: pointer;
+}
+
+.add-hold-name-wrapper {
+  height: auto;
+  margin: 10px 10px 10px 10px;
+}
+
+.add-hold-name-input-wrapper input {
+  width: 200%;
+  height: 100%;
+  
+}
+
+.add-hold-name-input-wrapper {
+  height: 20px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+.add-hold-content1-wrapper {
+    height: auto;
+    margin: 10px 10px 10px 10px;
+    display: flex;
+    flex-flow: row;
+}
+
+.add-hold-content1-left-wrapper {
+  height: 100%;
+  width: 100%;
+
+  display: flex;
+  flex-flow: column;
+  margin-right: 5px;
+}
+.add-hold-content1-right-wrapper {
+  height: 100%;
+  width: 100%;
+
+  display: flex;
+  flex-flow: column;
+  margin-left: 5px;
+}
+
+
+.add-hold-date-input-wrapper input {
+  width: 200%;
+  height: 100%;
+  
+}
+
+.add-hold-date-input-wrapper {
+  height: 20px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+}
+
+.add-hold-qty-wrapper {
+  height: auto;
+  margin: 10px 10px 10px 10px;
+}
+
+.add-hold-qty-input-wrapper input {
+  width: 200%;
+  height: 100%;
+  
+}
+
+.add-hold-qty-input-wrapper {
+  height: 20px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.add-hold-usp-wrapper {
+  height: auto;
+  margin: 10px 10px 10px 10px;
+}
+
+.add-hold-usp-input-wrapper input {
+  width: 200%;
+  height: 100%;
+  
+}
+
+.add-hold-usp-input-wrapper {
+  height: 20px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+.add-hold-er-wrapper {
+  height: auto;
+  margin: 10px 10px 10px 10px;
+}
+
+.add-hold-er-input-wrapper input {
+  width: 200%;
+  height: 100%;
+  
+}
+
+.add-hold-er-input-wrapper {
+  height: 20px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.add-hold-brokerage-wrapper {
+  height: auto;
+  margin: 10px 10px 10px 10px;
+}
+
+.add-hold-brokerage-input-wrapper input {
+  width: 200%;
+  height: 100%;
+  
+}
+
+.add-hold-brokerage-input-wrapper {
+  height: 20px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.add-hold-total-wrapper {
+  width: 100%;
+  height: 65px;
+
+  margin-top: 10px;
+  margin-bottom: 5px;
+
+  display: flex;
+  flex-flow: column;
+
+  background: #c4c4c4;
+
+}
+
+.add-hold-total-title-wrapper {
+  width: 100%;
+  height: 30px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-size: 18px;
+  font-weight: bold;
+
+}
+
+.add-hold-total-cost-wrapper {
+  width: 100%;
+  flex: 0 1 auto;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-size: 18px;
+
+}
+
+.addhold-popup-content-wrapper{
+  flex: 1 0 auto;
+
+  display: flex;
+  flex-flow: column;
+  color: #252525;
+}
+
 
 
 

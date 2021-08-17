@@ -24,34 +24,7 @@ class ApexChart extends React.Component {
           this.state = {
           
             series: [
-              {
-                name: '$APPL',
-                data: generateDayWiseTimeSeries(new Date('28 jul 2021 GMT').getTime(), 20, {
-                  min: 10,
-                  max: 60
-                })
-              },
-              {
-                name: '$NEPL',
-                data: generateDayWiseTimeSeries(new Date('28 jul 2021 GMT').getTime(), 20, {
-                  min: 10,
-                  max: 90
-                })
-              },
-              {
-                name: '$APED',
-                data: generateDayWiseTimeSeries(new Date('28 jul 2021 GMT').getTime(), 20, {
-                  min: 25,
-                  max: 70
-                })
-              },
-              {
-                name: '$OPEK',
-                data: generateDayWiseTimeSeries(new Date('28 jul 2021 GMT').getTime(), 20, {
-                  min: 10,
-                  max: 250
-                })
-              }
+             
             ],
             options: {
               chart: {
