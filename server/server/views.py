@@ -1,6 +1,3 @@
-from django.http import HttpResponse
-from django.http.response import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 import json
 from passlib.hash import pbkdf2_sha256
 from database.UsersTest import *
@@ -62,3 +59,5 @@ def getBotInfo(request):
         return JsonResponse({'alpacaKeys': keys})
     else:
         return HttpResponse("404: Route not available")
+
+def runTests(request):
