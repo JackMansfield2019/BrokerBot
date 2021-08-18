@@ -195,25 +195,34 @@ class BrokerBot():
         for proc in self.sh_processes:
             proc.start()
         """
+        print("Type q to exit or press 'ENTER':")
         while True:
             if not self.market_open:
+                print("Market not open")
                 for proc in sh_processes:
                     proc.join()
             else:
                 commands = self.get_commands()
                 cmd_list = list(commands)
-        
                 try:
-                    user = input("Type q to exit or press 'ENTER':")
+                    user =  input() #sys.stdin.readline()
+                    #time.sleep(1)
                 except EOFError:
                     continue
+
                 if(user == 'q'):
+                    print("quitting")
                     break
                 if(user in cmd_list):
                     commands.get(user)()
+                    print("Type q to exit or press 'ENTER':")
                     pass
                 else:
+                    print(user)
                     print(f"Invalid Input - command options are {cmd_list}")
+                    print("Type q to exit or press 'ENTER':")
+
                 self.update()
+            
     #--------------------------------------------------------------------------------------------------------------
 #==================================================================================================================
