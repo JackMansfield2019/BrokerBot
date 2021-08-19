@@ -15,6 +15,7 @@ Set up of config file:
 
 '''
 
+
 class DatabaseUtil(object):
     def __init__(self, config):
         self.con = psycopg2.connect(host=config["host"],
