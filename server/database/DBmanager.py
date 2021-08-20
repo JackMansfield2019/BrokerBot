@@ -15,9 +15,9 @@ class Users(object):
     def set_up_db(self):
         self.db.create_table("BrokerBot_configuration_Users", self.user_fields)
 
-    #returns a tuple of two ints
-    #tuple[0] = 0 if user is not found, = 1 if user is found
-    #tuple[1] = 0 if user is not added to database, = 1 is user is added
+    # returns a tuple of two ints
+    # tuple[0] = 0 if user is not found, = 1 if user is found
+    # tuple[1] = 0 if user is not added to database, = 1 is user is added
     def insert_data_for_Users(self, username, password):
         found = self.find_user(username, password)
         if found != 0:
@@ -36,16 +36,20 @@ class Users(object):
             except:
                 return 0, 0
 
-    def find_user(self, username, password):
+    def get_user(self, username):
         qry = """select * from brokerbot_configuration_users where 
-        username = '%s'""" % (username)
+                username = '%s'""" % username
         cur = self.db.get_cur()
         cur.execute(qry)
         users = cur.fetchall()
-        if (len(users) == 0):
+        return users
+
+    def find_user(self, username, password):
+        users = self.get_user(username)
+        if len(users) == 0:
             return 0
-        for user in users: #check for all users returned if their password is the same as the given password
-            if pbkdf2_sha256.verify(password, user[2]): 
+        for user in users:  # check for all users returned if their password is the same as the given password
+            if pbkdf2_sha256.verify(password, user[2]):
                 return 1
         return 2
 
@@ -68,9 +72,14 @@ class Bots(object):
         print("Bot %s added\n" % bot_id)
 
     def find_bots(self, user_ID):
+        bots = self.get_bots(user_ID)
+        if len(bots) == 0:
+            return 0
+        return 1
+
+    def get_bots(self, user_ID):
         qry = """select * from BrokerBot_configuration_Bots where user_id = '%s'""" % user_ID
         cur = self.db.get_cur()
         cur.execute(qry)
         bot = cur.fetchall()
         return bot
-
