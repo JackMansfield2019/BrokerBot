@@ -28,7 +28,10 @@ TODO:
     - Refine backtrading setup and functions.
     -
 """
-class Strategy(ABC, bt.Strategy):
+class Strategy(ABC):
+    """
+    Class: Strategy(ABC) 
+    """
     @abstractmethod
     def __init__(self, dh: DataHandler, eh: ExecutionHandler, ticker: str, strat_search_conn):
         self.dh = dh
@@ -112,7 +115,7 @@ class Strategy(ABC, bt.Strategy):
             current_candle = current_close - current_open 
 
             # Bullish Engulfing Buy Condition 
-            if (previous_candle < 0 and current_candle > 0) and (current_open =< previous_open and current_close > previous_close):
+            if (previous_candle < 0 and current_candle > 0) and (current_open <= previous_open and current_close > previous_close):
                 signal = 'buy'
                 #self.eh.start_streaming(signal) 
                 #money_alloc = self.eh.money_alloc_pre(0.0025, 15) 
@@ -131,49 +134,48 @@ class Strategy(ABC, bt.Strategy):
             while time.time() < next_time:
                 #time.sleep(1) 
 
-            """    
-            if time.time() = next_time:
-                continue 
-            else:
-                time.sleep(1) 
-            """ 
+                """    
+                if time.time() = next_time:
+                    continue 
+                else:
+                    time.sleep(1) 
+                """ 
    
-    """
-    Overview: sets the pipe connections
-
-    Requires: none
-    Modifies: none
-    Effects: none
-    Returns: none
-    Throws: RunTimeError if any of the parameters are null
-    """
     def set_eh_dh_conns(self, dh_q, eh_conn):
+        '''
+        Sets the pope connections
+
+            Parameters:
+                dh_q (...): ...
+                eh_conn (...): ...
+
+            Throws: RuntimeError if any of the parameters are null 
+        '''
         if dh_q is None or eh_conn is None:
             raise RuntimeError('set_eh_dh_conns called with a null') from exc
         self.dh_queue = dh_q
         self.eh_conn = eh_conn
-    """
-    Overview: adds a stock to the queue
 
-    Requires: none
-    Modifies: self.queue
-    Effects: appends "stock" to self.queue
-    Returns: none
-    Throws: none
-    """
     def add_queue(self, stock):
+        '''
+        Adds a stock to the queue
+
+            Parameters:
+                stock (...): a security that will be traded 
+        '''
         printf("Adding {} to queue".format(stock))
         self.queue.append(stock)
-    """
-    Overview: pops a stock from the queue
 
-    Requires: queue is not empty
-    Modifies: self.queue
-    Effects: appends "stock" to self.queue
-    Returns: none
-    Throws: RuntimeError if queue is empty
-    """
     def pop_queue(self, pos=0):
+        '''
+        Pops a stock from the queue 
+
+            Parameters:
+                pos (int): The selected index in the queue (set to 0 as default) 
+            
+            Throws: 
+                RuntimeError if queue is empty 
+        '''
         if len(self.queue) == 0:
             raise RuntimeError('cannot pop element from an empty queue') from exc
         else:

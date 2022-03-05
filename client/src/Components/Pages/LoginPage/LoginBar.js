@@ -2,8 +2,7 @@ import React from 'react';
 import { HiOutlineMail } from "react-icons/hi";
 import { HiOutlineLockClosed } from "react-icons/hi";
 import FormTextInput from './FormTextInput'
-//import { Link } from 'react-router-dom';
-//Work on the redirect o the Home Page
+import { Link } from 'react-router-dom';
 
 var CURRENT_ID = 0;
 
@@ -26,7 +25,7 @@ export default function LoginBar(props) {
                         Sign into your account
                       </div>
                   </div>
-                  <form id="login-page-form" onSubmit={e => props.Functions.loginSubmitClicked(e)}>
+                  <form id="login-page-form">
                     <div className="login-body">
                     <FormTextInput  Functions={ props.Functions } 
                                     Variables={{valueName: 'email', value: props.Variables.email, ID: 'Login',
@@ -38,14 +37,17 @@ export default function LoginBar(props) {
                                                 title: "Password", type: "password",  backgroundColor: '#6290b0', showForgotPassword: true}}>
                       <HiOutlineLockClosed fontSize="1.25rem" color="white"/>
                     </FormTextInput>
-                    <div className="login-submit-btn-wrapper center">
-                        <button>Log In</button>
-                    </div>
+                      <div className="login-submit-btn-wrapper center">
+                        <Link to="/Home">
+                          <input type="submit" value="submit" onClick={e => props.Functions.loginSubmitClicked(e)} className="submit"></input>
+                        </Link>
+                      </div>
+               
                     </div>
                     <div className="icons-wrapper center">
                       <div className="icons-container">
                         {props.Variables.Icons.map((item) => { 
-                          return  <a href={item.url}>
+                          return  <a key={++CURRENT_ID} href={item.url}>
                                     <img key={++CURRENT_ID} alt="" src={item.img} />
                                   </a>;
                         })}
